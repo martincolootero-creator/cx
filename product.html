@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Producto — CX Technology</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="site-nav"></div>
+
+<div class="page-detail">
+  <div class="breadcrumb" id="breadcrumb">
+    <a href="index.html">Inicio</a><span class="sep">/</span>
+    <a href="category.html">Tienda</a><span class="sep">/</span>
+    <span class="bc-current" id="bc-name">Producto</span>
+  </div>
+
+  <div id="detail-wrap"></div>
+  <div id="related-wrap"></div>
+</div>
+
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script>
+const id = new URLSearchParams(location.search).get('id');
+const p  = cx.getById(id);
+
+renderNav('');
+renderFooter();
+renderCartDrawer();
+
+if (!p) {
+  document.getElementById('detail-wrap').innerHTML = `<div style="text-align:center;padding:100px 0"><h2>Producto no encontrado</h2><a href="index.html" class="btn-primary" style="margin-top:20px;display:inline-block">Volver al inicio</a></div>`;
+} else {
+  document.title = p.name + ' — CX Technology';
+  document.getElementById('bc-name').textContent = p.name;
+
+  // Update breadcrumb with category
+  const cat = cx.getCategories().find(c => c.id === p.category);
+  if (cat) {
+    document.getElementById('breadcrumb').innerHTML = `
+      <a href="index.html">Inicio</a><span class="sep">/</span>
+      <a href="category.html?id=${p.category}">${cat.label}</a><span class="sep">/</span>
+      <span class="bc-current">${p.name}</span>`;
+  }
+
+  let selectedColor = 0;
+  const disc = cx.pct(p);
+
+  let badge = '';
+  if (p.badge==='Superventas') badge = `<span class="card-badge cb-super inline-badge">Superventas</span>`;
+  else if (p.badge==='Nuevo')  badge = `<span class="card-badge cb-new inline-badge">Nuevo</span>`;
+  else if (disc>0)             badge = `<span class="card-badge cb-sale inline-badge">-${disc}%</span>`;
+
+  function renderDetail() {
+    document.getElementById('detail-wrap').innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-img-wrap">
+        <div class="detail-img-main">
+          <img id="main-img" src="${p.image}" alt="${p.name}" style="max-height:340px;object-fit:contain" onerror="this.style.opacity='.2'">
+        </div>
+        ${p.colors.length > 1 ? `<div class="detail-thumbs">${p.colors.map((c,i)=>`
+          <button class="detail-thumb${i===selectedColor?' active':''}" onclick="selectColor(${i})" style="background:${c==='#eeeedd'||c.startsWith('#d')||c.startsWith('#e')?c:'var(--card)'}">
+            <div style="width:36px;height:36px;border-radius:8px;background:${c}"></div>
+          </button>`).join('')}</div>` : ''}
+      </div>
+
+      <div class="detail-info">
+        ${badge}
+        <h1 class="detail-name">${p.name}</h1>
+        <p class="detail-desc">${p.longDescription || p.description}</p>
+
+        <div class="detail-price-row">
+          <span class="detail-price">${cx.fmt(p.price)}</span>
+          ${p.oldPrice?`<span class="detail-old-price">${cx.fmt(p.oldPrice)}</span><span class="pct-off">-${disc}%</span>`:''}
+        </div>
+
+        <div class="detail-option">
+          <div class="option-label">Color: <strong id="color-name">${p.colorNames[selectedColor]}</strong></div>
+          <div class="color-selector">
+            ${p.colors.map((c,i)=>`<button class="color-btn${i===selectedColor?' active':''}" id="cbtn-${i}"
+              style="background:${c};${c.startsWith('#d')||c.startsWith('#e')||c==='#eeeedd'?'border:1px solid #ccc':''}"
+              onclick="selectColor(${i})" title="${p.colorNames[i]}"></button>`).join('')}
+          </div>
+        </div>
+
+        <div class="detail-option">
+          <div class="option-label">Cantidad</div>
+          <div class="qty-selector">
+            <button class="qty-btn" onclick="setQty(qty-1)">−</button>
+            <span class="qty-display" id="qty-display">1</span>
+            <button class="qty-btn" onclick="setQty(qty+1)">+</button>
+          </div>
+        </div>
+
+        <button class="btn-add-cart" id="add-btn" onclick="doAdd()">Agregar al carrito</button>
+
+        <div class="detail-badges">
+          <div class="db"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> Envío gratis en compras +$80</div>
+          <div class="db"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Garantía 12 meses</div>
+          <div class="db"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg> Devoluciones gratis</div>
+        </div>
+      </div>
+    </div>
+
+    ${p.specs && p.specs.length ? `
+    <div class="detail-specs-section">
+      <h2>Especificaciones</h2>
+      <div class="specs-grid">
+        ${p.specs.map(s=>`<div class="spec-item"><span class="spec-label">${s.label}</span><span class="spec-value">${s.value}</span></div>`).join('')}
+      </div>
+    </div>` : ''}`;
+  }
+
+  let qty = 1;
+  function setQty(n) { qty = Math.max(1,n); document.getElementById('qty-display').textContent = qty; }
+
+  function selectColor(i) {
+    selectedColor = i;
+    document.getElementById('color-name').textContent = p.colorNames[i];
+    document.querySelectorAll('.color-btn').forEach((b,j) => b.classList.toggle('active', j===i));
+    document.querySelectorAll('.detail-thumb').forEach((b,j) => b.classList.toggle('active', j===i));
+  }
+
+  function doAdd() {
+    for (let i=0; i<qty; i++) cx.cartAdd(p.id, selectedColor);
+    const btn = document.getElementById('add-btn');
+    btn.textContent = '✓ Agregado al carrito'; btn.classList.add('added');
+    cx.updateBadge();
+    setTimeout(() => { btn.textContent='Agregar al carrito'; btn.classList.remove('added'); }, 2000);
+    openCart();
+  }
+
+  renderDetail();
+
+  // Related
+  const related = cx.getByCategory(p.category).filter(x=>x.id!==p.id).slice(0,4);
+  if (related.length) {
+    document.getElementById('related-wrap').innerHTML = `
+      <div class="related-section">
+        <div class="section-header">
+          <div><div class="section-label">También te puede interesar</div><h2>Productos relacionados</h2></div>
+          <a href="category.html?id=${p.category}" class="see-all">Ver todos →</a>
+        </div>
+        <div class="prod-grid-4">${related.map(productCard).join('')}</div>
+      </div>`;
+  }
+}
+</script>
+</body>
+</html>

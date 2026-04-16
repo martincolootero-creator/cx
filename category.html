@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tienda — CX Technology</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="site-nav"></div>
+
+<div class="page-shop">
+  <div class="breadcrumb">
+    <a href="index.html">Inicio</a><span class="sep">/</span>
+    <a href="category.html">Tienda</a>
+    <span id="bc-extra"></span>
+  </div>
+
+  <div class="shop-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-title">Filtrar</div>
+
+      <div class="sidebar-section">
+        <h3>Categoría</h3>
+        <ul class="cat-list" id="catList"></ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Precio (USD)</h3>
+        <div class="price-row-f">
+          <input class="price-input" id="pmin" type="number" placeholder="Mín">
+          <input class="price-input" id="pmax" type="number" placeholder="Máx">
+        </div>
+        <button class="apply-btn" onclick="applyFilters()">Aplicar</button>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Destacados</h3>
+        <ul class="cat-list">
+          <li><a href="category.html?featured=1">⭐ Más vendidos</a></li>
+          <li><a href="category.html?badge=Nuevo">✨ Novedades</a></li>
+          <li><a href="category.html?sale=1">🏷️ Ofertas</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div>
+      <div id="cat-hero"></div>
+
+      <div class="shop-toolbar">
+        <span class="result-info"><strong id="count">0</strong> productos</span>
+        <div class="sort-row">
+          <span class="sort-label">Ordenar:</span>
+          <select class="sort-sel" id="sortSel" onchange="applyFilters()">
+            <option value="">Más relevantes</option>
+            <option value="price-asc">Menor precio</option>
+            <option value="price-desc">Mayor precio</option>
+            <option value="name">A–Z</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="prod-grid-shop" id="prodGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script>
+const p = new URLSearchParams(location.search);
+const catId    = p.get('id');
+const featured = p.get('featured');
+const badge    = p.get('badge');
+const sale     = p.get('sale');
+
+const cat = cx.getCategories().find(c => c.id === catId);
+
+renderNav(catId || '');
+renderFooter();
+renderCartDrawer();
+
+if (cat) document.title = `${cat.label} — CX Technology`;
+
+// Breadcrumb extra
+if (cat) document.getElementById('bc-extra').innerHTML = `<span class="sep">/</span><span class="bc-current">${cat.label}</span>`;
+
+// Sidebar cat list
+document.getElementById('catList').innerHTML =
+  `<li class="${!catId?'active':''}"><a href="category.html">Todos <span>${cx.getProducts().length}</span></a></li>` +
+  cx.getCategories().map(c =>
+    `<li class="${c.id===catId?'active':''}"><a href="category.html?id=${c.id}">${c.label} <span>${cx.getByCategory(c.id).length}</span></a></li>`
+  ).join('');
+
+// Cat hero banner (red, like in our design)
+if (cat) {
+  document.getElementById('cat-hero').innerHTML = `
+    <div class="cat-hero-red">
+      <h1>${cat.label}</h1>
+      <p>${cat.description}</p>
+    </div>`;
+}
+
+function applyFilters() {
+  let prods = catId ? cx.getByCategory(catId) : cx.getProducts();
+  if (featured) prods = prods.filter(p => p.featured);
+  if (badge)    prods = prods.filter(p => p.badge === badge);
+  if (sale)     prods = prods.filter(p => p.oldPrice);
+
+  const pmin = parseFloat(document.getElementById('pmin').value) || 0;
+  const pmax = parseFloat(document.getElementById('pmax').value) || Infinity;
+  prods = prods.filter(p => p.price >= pmin && p.price <= pmax);
+
+  const sort = document.getElementById('sortSel').value;
+  if (sort === 'price-asc')  prods.sort((a,b) => a.price - b.price);
+  if (sort === 'price-desc') prods.sort((a,b) => b.price - a.price);
+  if (sort === 'name')       prods.sort((a,b) => a.name.localeCompare(b.name));
+
+  document.getElementById('count').textContent = prods.length;
+  document.getElementById('prodGrid').innerHTML = prods.length
+    ? prods.map(productCard).join('')
+    : '<p style="grid-column:1/-1;text-align:center;padding:60px 0;color:#aaa">No se encontraron productos.</p>';
+}
+
+applyFilters();
+</script>
+</body>
+</html>
