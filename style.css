@@ -715,6 +715,17 @@ img { max-width: 100%; display: block; }
   align-items: center;
   overflow: hidden;
 }
+.home-hero-fw.image-only {
+  min-height: unset;
+  display: block;
+}
+.home-hero-fw.image-only img.hero-bg-img {
+  position: static !important;
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+  object-fit: unset;
+}
 .home-hero-fw .hero-inner {
   max-width: 1280px;
   margin: 0 auto;

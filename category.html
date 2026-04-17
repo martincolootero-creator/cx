@@ -139,10 +139,10 @@ function render() {
   const heroBg    = catBanner?.bg_color || '#1a1a1a';
 
   if (catBanner?.mode === 'image_only') {
-    html += `<div class="cat-hero-card" style="padding:0;overflow:hidden;grid-column:span 2;min-height:220px;position:relative;background:#1a1a1a">
-      ${catBanner.cta_link ? `<a href="${catBanner.cta_link}" style="display:block;width:100%;height:100%">` : ''}
-      <img src="${heroImg}" alt="${heroTitle}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" onerror="this.style.opacity='.3'">
-      ${catBanner.cta_link ? '</a>' : ''}
+    html += `<div style="grid-column:span 3;width:100%;overflow:hidden;border-radius:14px">
+      ${catBanner.cta_link ? `<a href="${catBanner.cta_link}" style="display:block">` : '<div>'}
+      <img src="${heroImg}" alt="${heroTitle}" style="width:100%;height:auto;display:block" onerror="this.style.opacity='.3'">
+      ${catBanner.cta_link ? '</a>' : '</div>'}
     </div>`;
   } else {
     const bTitle = catBanner?.title || heroTitle;
