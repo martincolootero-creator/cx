@@ -129,21 +129,34 @@ function render() {
   let html = '';
 
   // Hero banner (cat or generic)
+  // Load admin-editable cat banner
+  const catBanners = JSON.parse(localStorage.getItem('cx_cat_banners') || '{}');
+  const catBanner  = activeCat && catBanners[activeCat] ? catBanners[activeCat] : null;
+
   const heroTitle = cat ? cat.label : 'Todos los productos';
   const heroDesc  = cat ? cat.desc  : 'Notebooks, Mini PCs, PCs de escritorio y gabinetes CX.';
-  const heroImg   = cat
-    ? (prods[0] ? prods[0].image : '')
-    : 'img/CX30615.png';
+  const heroImg   = catBanner?.image || (prods[0] ? prods[0].image : 'img/CX30615.png');
+  const heroBg    = catBanner?.bg_color || '#1a1a1a';
 
-  html += `<div class="cat-hero-card">
-    <div class="hero-card-text">
-      <h1>${heroTitle}</h1>
-      <p>${heroDesc}</p>
-    </div>
-    <div class="hero-card-img">
-      <img src="${heroImg}" alt="${heroTitle}" onerror="this.style.opacity='.3'">
-    </div>
-  </div>`;
+  if (catBanner?.mode === 'image_only') {
+    html += `<div class="cat-hero-card" style="padding:0;overflow:hidden;grid-column:span 2;min-height:220px;position:relative;background:#1a1a1a">
+      ${catBanner.cta_link ? `<a href="${catBanner.cta_link}" style="display:block;width:100%;height:100%">` : ''}
+      <img src="${heroImg}" alt="${heroTitle}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" onerror="this.style.opacity='.3'">
+      ${catBanner.cta_link ? '</a>' : ''}
+    </div>`;
+  } else {
+    const bTitle = catBanner?.title || heroTitle;
+    const bDesc  = catBanner?.desc  || heroDesc;
+    html += `<div class="cat-hero-card" style="background:${heroBg}">
+      <div class="hero-card-text">
+        <h1>${bTitle}</h1>
+        <p>${bDesc}</p>
+      </div>
+      <div class="hero-card-img">
+        <img src="${heroImg}" alt="${bTitle}" onerror="this.style.opacity='.3'">
+      </div>
+    </div>`;
+  }
 
   // First product in col 3 of row 1 (if exists)
   if(visible.length > 0) html += productCard(visible[0]);

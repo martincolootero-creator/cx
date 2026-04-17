@@ -4,6 +4,68 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin — CX Technology</title>
 <link rel="stylesheet" href="style.css">
+<style>
+.home-editor-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+.home-block {
+  background:#fff; border:1px solid var(--border); border-radius:12px;
+  padding:20px; position:relative;
+}
+.home-block-title {
+  font-size:13px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--muted); margin-bottom:14px;
+  padding-bottom:10px; border-bottom:1px solid var(--border);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.home-block-title .btn-edit-block {
+  padding:4px 12px; font-size:11px; background:var(--accent); color:#fff;
+  border:none; border-radius:4px; cursor:pointer; font-family:var(--font);
+  font-weight:600;
+}
+.home-block-preview {
+  font-size:12px; color:var(--muted); line-height:1.6;
+}
+.home-block-preview strong { color:var(--text); }
+.home-block-preview img {
+  max-height:60px; object-fit:contain; border-radius:6px;
+  background:#f5f5f5; margin-top:8px; display:block;
+}
+.mode-badge {
+  display:inline-block; font-size:10px; font-weight:600;
+  padding:2px 8px; border-radius:10px; margin-left:8px;
+  text-transform:uppercase; letter-spacing:.05em;
+}
+.mode-full  { background:#e8f8fb; color:#1f8faa; }
+.mode-img   { background:#f5f5f5; color:#888; }
+.lifestyle-list { display:flex; flex-direction:column; gap:10px; }
+.lifestyle-item {
+  background:#f9f9f9; border:1px solid var(--border); border-radius:8px;
+  padding:12px 14px; display:grid; grid-template-columns:40px 1fr auto; gap:10px; align-items:center;
+}
+.lifestyle-item img { width:40px; height:40px; object-fit:contain; background:#f2f2f2; border-radius:4px; }
+.series-list { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.series-item {
+  background:#f9f9f9; border:1px solid var(--border); border-radius:8px;
+  padding:10px 12px; display:flex; flex-direction:column; gap:6px;
+}
+.series-item img { width:100%; height:60px; object-fit:contain; background:#f2f2f2; border-radius:4px; }
+.cat-img-list { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.cat-img-item {
+  background:#f9f9f9; border:1px solid var(--border); border-radius:8px;
+  padding:10px 12px; display:flex; flex-direction:column; gap:6px; font-size:12px;
+}
+.cat-img-item img { height:48px; object-fit:contain; background:#f2f2f2; border-radius:4px; }
+.modal-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:20px; }
+.modal-tab {
+  padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;
+  border-bottom:2px solid transparent; margin-bottom:-1px;
+  background:none; border-top:none; border-left:none; border-right:none;
+  font-family:var(--font); color:var(--muted); transition:color .15s,border-color .15s;
+}
+.modal-tab.active { color:var(--text); border-bottom-color:var(--text); }
+.modal-tab-content { display:none; } .modal-tab-content.active { display:block; }
+.color-row { display:flex; align-items:center; gap:10px; }
+.color-row input[type=color] { width:40px; height:32px; border:1px solid var(--border); border-radius:4px; cursor:pointer; padding:2px; }
+</style>
 </head>
 <body>
 <div id="cx-nav"></div>
@@ -13,13 +75,17 @@
     <div class="admin-sidebar-hd"><span>Panel Admin — CX</span></div>
     <h3>General</h3>
     <div class="anav active" onclick="show('dashboard',this)">📊 Dashboard</div>
-    <h3>Contenido</h3>
+    <h3>Home</h3>
+    <div class="anav" onclick="show('home-editor',this)">🏠 Editor del Home</div>
+    <div class="anav" onclick="show('banners',this)">🖼️ Banners</div>
+    <h3>Catálogo</h3>
     <div class="anav" onclick="show('products',this)">💻 Productos</div>
     <div class="anav" onclick="show('categories',this)">🗂️ Categorías</div>
+    <h3>Ventas</h3>
     <div class="anav" onclick="show('orders',this)">📦 Pedidos</div>
     <h3>Herramientas</h3>
-    <div class="anav" onclick="if(confirm('¿Resetear datos?')){localStorage.removeItem('cx_prods');localStorage.removeItem('cx_cats');location.reload()}">🔄 Resetear datos</div>
-    <div class="anav" onclick="location.href='index.html'">🌐 Ver tienda</div>
+    <div class="anav" onclick="resetAll()">🔄 Resetear todo</div>
+    <div class="anav" onclick="location.href='index.html'" style="color:var(--accent)">🌐 Ver tienda</div>
   </aside>
 
   <div class="admin-main">
@@ -34,12 +100,84 @@
       </div>
     </div>
 
+    <!-- HOME EDITOR -->
+    <div class="apanel" id="panel-home-editor">
+      <div class="apanel-title">Editor del Home</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:24px">Editá cada bloque del home. Los cambios se aplican en tiempo real al guardar.</p>
+
+      <div class="home-editor-grid">
+
+        <!-- HERO -->
+        <div class="home-block" id="block-hero">
+          <div class="home-block-title">
+            ① Hero principal
+            <button class="btn-edit-block" onclick="openHeroModal()">Editar</button>
+          </div>
+          <div class="home-block-preview" id="preview-hero"></div>
+        </div>
+
+        <!-- CROSSSELL -->
+        <div class="home-block" id="block-crosssell">
+          <div class="home-block-title">
+            ⑦ Banner Crosssell
+            <button class="btn-edit-block" onclick="openBannerModal('crosssell')">Editar</button>
+          </div>
+          <div class="home-block-preview" id="preview-crosssell"></div>
+        </div>
+
+      </div>
+
+      <!-- LIFESTYLE -->
+      <div class="home-block" style="margin-bottom:16px">
+        <div class="home-block-title">
+          ② Cards lifestyle (3 columnas)
+          <button class="btn-edit-block" onclick="openLifestyleModal()">Editar</button>
+        </div>
+        <div class="lifestyle-list" id="preview-lifestyle"></div>
+      </div>
+
+      <!-- SERIES -->
+      <div class="home-block" style="margin-bottom:16px">
+        <div class="home-block-title">
+          ④ Grid "Descubre las series"
+          <button class="btn-edit-block" onclick="openSeriesModal()">Editar</button>
+        </div>
+        <div class="series-list" id="preview-series"></div>
+      </div>
+
+      <!-- CAT IMAGES -->
+      <div class="home-block" style="margin-bottom:16px">
+        <div class="home-block-title">
+          ⑤ "Descubre productos" — imágenes de categorías
+          <button class="btn-edit-block" onclick="openCatImgModal()">Editar</button>
+        </div>
+        <div class="cat-img-list" id="preview-cat-imgs"></div>
+      </div>
+
+      <!-- INSTITUTIONAL -->
+      <div class="home-block">
+        <div class="home-block-title">
+          ⑥ Banner institucional
+          <button class="btn-edit-block" onclick="openBannerModal('institutional')">Editar</button>
+        </div>
+        <div class="home-block-preview" id="preview-institutional"></div>
+      </div>
+
+    </div>
+
+    <!-- BANNERS (category heroes) -->
+    <div class="apanel" id="panel-banners">
+      <div class="apanel-title">Banners de categorías</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Hero banner que aparece en la parte superior de cada página de categoría.</p>
+      <div id="cat-banners-list"></div>
+    </div>
+
     <!-- PRODUCTS -->
     <div class="apanel" id="panel-products">
       <div class="apanel-title">Productos</div>
       <button class="btn-add" onclick="openProdModal()">+ Nuevo producto</button>
       <table class="atable">
-        <thead><tr><th>Imagen</th><th>Nombre</th><th>SKU</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Destacado</th><th>Acciones</th></tr></thead>
+        <thead><tr><th>Imagen</th><th>Nombre</th><th>SKU</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Dest.</th><th>Acciones</th></tr></thead>
         <tbody id="prods-tbody"></tbody>
       </table>
     </div>
@@ -66,14 +204,123 @@
   </div>
 </div>
 
-<!-- MODAL PRODUCTO -->
+<!-- ═══ MODAL HERO ════════════════════════════════════════ -->
+<div class="modal-bg" id="modal-hero">
+  <div class="modal" style="max-width:620px">
+    <h3>Editar Hero principal</h3>
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchModalTab('hero','full')">Con texto</button>
+      <button class="modal-tab" onclick="switchModalTab('hero','image_only')">Solo imagen</button>
+    </div>
+    <div class="modal-tab-content active" id="hero-tab-full">
+      <div class="fg"><label>Headline (usá \n para salto de línea)</label><input id="h-headline" placeholder="EQUIPOS PARA\nTRABAJAR Y CRECER"></div>
+      <div class="fg"><label>Subtítulo / descripción</label><textarea id="h-sub"></textarea></div>
+      <div class="fg-row">
+        <div class="fg"><label>Botón 1 — texto</label><input id="h-cta1-text"></div>
+        <div class="fg"><label>Botón 1 — link</label><input id="h-cta1-link"></div>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label>Botón 2 — texto</label><input id="h-cta2-text"></div>
+        <div class="fg"><label>Botón 2 — link</label><input id="h-cta2-link"></div>
+      </div>
+      <div class="fg"><label>Imagen del producto (ruta o URL)</label><input id="h-image" placeholder="img/CX30615.png"></div>
+      <div class="fg"><label>Color de fondo</label>
+        <div class="color-row">
+          <input type="color" id="h-bg-color" value="#1a1a1a" oninput="document.getElementById('h-bg-hex').value=this.value">
+          <input id="h-bg-hex" value="#1a1a1a" style="width:100px" oninput="document.getElementById('h-bg-color').value=this.value">
+        </div>
+      </div>
+    </div>
+    <div class="modal-tab-content" id="hero-tab-image_only">
+      <div class="fg"><label>Imagen (ruta o URL)</label><input id="h-img-only" placeholder="img/banner-hero.jpg"></div>
+      <div class="fg"><label>Link al hacer clic</label><input id="h-img-link" placeholder="category.html"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('modal-hero')">Cancelar</button>
+      <button class="btn-save" onclick="saveHero()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL LIFESTYLE ═══════════════════════════════════ -->
+<div class="modal-bg" id="modal-lifestyle">
+  <div class="modal" style="max-width:680px">
+    <h3>Editar Cards Lifestyle</h3>
+    <div id="lifestyle-edit-list"></div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('modal-lifestyle')">Cancelar</button>
+      <button class="btn-save" onclick="saveLifestyle()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL SERIES ══════════════════════════════════════ -->
+<div class="modal-bg" id="modal-series">
+  <div class="modal" style="max-width:680px">
+    <h3>Editar "Descubre las Series"</h3>
+    <div id="series-edit-list"></div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('modal-series')">Cancelar</button>
+      <button class="btn-save" onclick="saveSeries()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL CAT IMAGES ══════════════════════════════════ -->
+<div class="modal-bg" id="modal-cat-img">
+  <div class="modal" style="max-width:560px">
+    <h3>Imágenes de "Descubre Productos"</h3>
+    <div id="cat-img-edit-list"></div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('modal-cat-img')">Cancelar</button>
+      <button class="btn-save" onclick="saveCatImgs()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL BANNER GENÉRICO (crosssell / institutional / cat hero) ═══ -->
+<div class="modal-bg" id="modal-banner">
+  <div class="modal" style="max-width:620px">
+    <h3 id="banner-modal-title">Editar Banner</h3>
+    <input type="hidden" id="banner-key">
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchModalTab('banner','full')">Con texto</button>
+      <button class="modal-tab" onclick="switchModalTab('banner','image_only')">Solo imagen</button>
+    </div>
+    <div class="modal-tab-content active" id="banner-tab-full">
+      <div class="fg"><label>Título</label><input id="b-title"></div>
+      <div class="fg"><label>Descripción</label><textarea id="b-desc"></textarea></div>
+      <div class="fg-row">
+        <div class="fg"><label>Texto del botón</label><input id="b-cta-text"></div>
+        <div class="fg"><label>Link del botón</label><input id="b-cta-link"></div>
+      </div>
+      <div class="fg"><label>Imagen (ruta o URL)</label><input id="b-image"></div>
+      <div class="fg"><label>Color de fondo</label>
+        <div class="color-row">
+          <input type="color" id="b-bg-color" value="#e8f8fb" oninput="document.getElementById('b-bg-hex').value=this.value">
+          <input id="b-bg-hex" value="#e8f8fb" style="width:100px" oninput="document.getElementById('b-bg-color').value=this.value">
+        </div>
+      </div>
+    </div>
+    <div class="modal-tab-content" id="banner-tab-image_only">
+      <div class="fg"><label>Imagen (ruta o URL)</label><input id="b-img-only"></div>
+      <div class="fg"><label>Link al hacer clic (opcional)</label><input id="b-img-link"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('modal-banner')">Cancelar</button>
+      <button class="btn-save" onclick="saveBanner()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL PRODUCTO ════════════════════════════════════ -->
 <div class="modal-bg" id="modal-prod">
   <div class="modal">
     <h3 id="prod-modal-title">Nuevo producto</h3>
     <input type="hidden" id="edit-prod-id">
     <div class="fg-row">
       <div class="fg"><label>Nombre</label><input id="f-name"></div>
-      <div class="fg"><label>SKU</label><input id="f-sku" placeholder="CX12345"></div>
+      <div class="fg"><label>SKU</label><input id="f-sku"></div>
     </div>
     <div class="fg-row">
       <div class="fg"><label>Categoría</label><select id="f-cat"></select></div>
@@ -83,7 +330,7 @@
     </div>
     <div class="fg-row">
       <div class="fg"><label>Precio ARS</label><input id="f-price" type="number"></div>
-      <div class="fg"><label>Precio anterior (opcional)</label><input id="f-oldprice" type="number" placeholder="0"></div>
+      <div class="fg"><label>Precio anterior</label><input id="f-oldprice" type="number" placeholder="0"></div>
     </div>
     <div class="fg-row">
       <div class="fg"><label>Stock</label><input id="f-stock" type="number" value="10"></div>
@@ -92,8 +339,8 @@
         <label class="toggle"><input type="checkbox" id="f-featured"><span class="tslider"></span></label>
       </div>
     </div>
-    <div class="fg"><label>URL / Ruta de imagen</label><input id="f-image" placeholder="img/CX12345.png"></div>
-    <div class="fg"><label>Descripción corta (specs)</label><input id="f-shortdesc" placeholder="Intel Core i5 · 8GB · 256GB SSD"></div>
+    <div class="fg"><label>Imagen (ruta o URL)</label><input id="f-image"></div>
+    <div class="fg"><label>Descripción corta (specs)</label><input id="f-shortdesc"></div>
     <div class="fg"><label>Descripción larga</label><textarea id="f-longdesc"></textarea></div>
     <div class="modal-foot">
       <button class="btn-cancel" onclick="closeModal('modal-prod')">Cancelar</button>
@@ -102,7 +349,7 @@
   </div>
 </div>
 
-<!-- MODAL CATEGORÍA -->
+<!-- ═══ MODAL CATEGORÍA ═══════════════════════════════════ -->
 <div class="modal-bg" id="modal-cat">
   <div class="modal">
     <h3 id="cat-modal-title">Nueva categoría</h3>
@@ -118,40 +365,371 @@
 
 <div id="cx-footer"></div>
 <script src="js/data.js"></script>
+<script src="js/home-data.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded',()=>{ loadAll(); });
 
-function show(id,el){
-  document.querySelectorAll('.apanel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.anav').forEach(a=>a.classList.remove('active'));
-  document.getElementById('panel-'+id).classList.add('active');
-  if(el)el.classList.add('active');
+// ── PANEL SWITCHING ──────────────────────────────────────
+function show(id, el) {
+  document.querySelectorAll('.apanel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.anav').forEach(a => a.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  if (el) el.classList.add('active');
 }
 
-function loadAll(){ loadDash(); loadProds(); loadCats(); loadOrders(); }
+document.addEventListener('DOMContentLoaded', () => {
+  loadDash();
+  loadHomeEditor();
+  loadCatBanners();
+  loadProds();
+  loadCats();
+  loadOrders();
+});
 
-function loadDash(){
-  const prods=cx.getProducts(),cats=cx.getCategories();
-  const orders=JSON.parse(localStorage.getItem('cx_orders')||'[]');
-  document.getElementById('stats').innerHTML=[
-    {n:prods.length,l:'Productos'},
-    {n:cats.length,l:'Categorías'},
-    {n:orders.length,l:'Pedidos'},
-    {n:prods.filter(p=>p.featured).length,l:'Destacados'},
-  ].map(s=>`<div class="stat-card"><div class="stat-n">${s.n}</div><div class="stat-l">${s.l}</div></div>`).join('');
-  document.getElementById('recent-prods').innerHTML=`<table class="atable">
-    <thead><tr><th>Imagen</th><th>Nombre</th><th>Precio</th><th>Categoría</th></tr></thead>
-    <tbody>${[...prods].reverse().slice(0,5).map(p=>`<tr>
+// ── MODAL TABS ───────────────────────────────────────────
+let heroMode   = 'full';
+let bannerMode = 'full';
+
+function switchModalTab(modal, mode) {
+  const prefix = modal === 'hero' ? 'hero' : 'banner';
+  if (modal === 'hero') heroMode = mode;
+  else bannerMode = mode;
+
+  const tabs = document.querySelectorAll(`#modal-${modal} .modal-tab`);
+  tabs.forEach((t, i) => t.classList.toggle('active', (i === 0 && mode === 'full') || (i === 1 && mode === 'image_only')));
+  document.querySelectorAll(`#modal-${modal} .modal-tab-content`).forEach(c => c.classList.remove('active'));
+  document.getElementById(`${prefix}-tab-${mode}`).classList.add('active');
+}
+
+// ── DASHBOARD ────────────────────────────────────────────
+function loadDash() {
+  const prods = cx.getProducts(), cats = cx.getCategories();
+  const orders = JSON.parse(localStorage.getItem('cx_orders') || '[]');
+  document.getElementById('stats').innerHTML = [
+    { n: prods.length, l: 'Productos' },
+    { n: cats.length,  l: 'Categorías' },
+    { n: orders.length, l: 'Pedidos' },
+    { n: prods.filter(p => p.featured).length, l: 'Destacados' },
+  ].map(s => `<div class="stat-card"><div class="stat-n">${s.n}</div><div class="stat-l">${s.l}</div></div>`).join('');
+
+  document.getElementById('recent-prods').innerHTML = `<table class="atable">
+    <thead><tr><th>Img</th><th>Nombre</th><th>Precio</th><th>Cat.</th></tr></thead>
+    <tbody>${[...prods].reverse().slice(0,5).map(p => `<tr>
       <td><img src="${p.image}" onerror="this.style.opacity='.2'"></td>
       <td><a href="product.html?id=${p.id}" target="_blank" style="color:var(--accent)">${p.name}</a></td>
       <td>${cx.fmt(p.price)}</td>
-      <td>${cx.getCategories().find(c=>c.id===p.category)?.label||p.category}</td>
+      <td>${cx.getCategories().find(c => c.id === p.category)?.label || p.category}</td>
     </tr>`).join('')}</tbody></table>`;
 }
 
-function loadProds(){
-  document.getElementById('prods-tbody').innerHTML=cx.getProducts().map(p=>{
-    const cat=cx.getCategories().find(c=>c.id===p.category);
+// ── HOME EDITOR PREVIEWS ─────────────────────────────────
+function loadHomeEditor() {
+  const home = hm.get();
+
+  // Hero preview
+  const h = home.hero;
+  document.getElementById('preview-hero').innerHTML = `
+    <span class="mode-badge ${h.mode==='full'?'mode-full':'mode-img'}">${h.mode==='full'?'Con texto':'Solo imagen'}</span>
+    ${h.mode==='full' ? `<br><strong>${(h.headline||'').replace(/\n/g,' ')}</strong><br>${h.subheadline||''}<br>
+    Botón 1: <strong>${h.cta1_text}</strong> → ${h.cta1_link}<br>
+    Botón 2: <strong>${h.cta2_text}</strong> → ${h.cta2_link}` : `Link: ${h.cta1_link}`}
+    <img src="${h.image}" onerror="this.style.display='none'">`;
+
+  // Lifestyle preview
+  const lc = home.lifestyle || [];
+  document.getElementById('preview-lifestyle').innerHTML = lc.map(c => `
+    <div class="lifestyle-item">
+      <img src="${c.image}" onerror="this.style.opacity='.2'">
+      <div><strong style="font-size:12px">${c.title}</strong><br><span style="font-size:11px;color:var(--muted)">${c.link}</span></div>
+      <button class="btn-edit" onclick="openLifestyleCardModal(${c.id})">Editar</button>
+    </div>`).join('');
+
+  // Series preview
+  const sr = home.series || [];
+  document.getElementById('preview-series').innerHTML = sr.map(s => `
+    <div class="series-item">
+      <img src="${s.image}" onerror="this.style.opacity='.2'">
+      <strong style="font-size:12px">${s.title}</strong>
+      <span style="font-size:11px;color:var(--muted)">${s.link}</span>
+    </div>`).join('');
+
+  // Cat images preview
+  const catImgs = home.cat_images || {};
+  const cats = cx.getCategories();
+  document.getElementById('preview-cat-imgs').innerHTML = cats.map(c => `
+    <div class="cat-img-item">
+      <img src="${catImgs[c.id]||''}" onerror="this.style.display='none'">
+      <strong>${c.label}</strong>
+      <span style="color:var(--muted)">${catImgs[c.id]||'Sin imagen'}</span>
+    </div>`).join('');
+
+  // Institutional preview
+  const inst = home.institutional;
+  document.getElementById('preview-institutional').innerHTML = `
+    <span class="mode-badge ${inst.mode==='full'?'mode-full':'mode-img'}">${inst.mode==='full'?'Con texto':'Solo imagen'}</span>
+    ${inst.mode==='full' ? `<br><strong>${inst.title}</strong><br>${inst.desc}` : `Link: ${inst.cta_link}`}
+    <img src="${inst.image}" onerror="this.style.display='none'">`;
+
+  // Crosssell preview
+  const cs = home.crosssell;
+  document.getElementById('preview-crosssell').innerHTML = `
+    <span class="mode-badge ${cs.mode==='full'?'mode-full':'mode-img'}">${cs.mode==='full'?'Con texto':'Solo imagen'}</span>
+    ${cs.mode==='full' ? `<br><strong>${cs.title}</strong><br>${cs.desc}` : `Link: ${cs.cta_link}`}
+    <img src="${cs.image}" onerror="this.style.display='none'">`;
+}
+
+// ── HERO MODAL ───────────────────────────────────────────
+function openHeroModal() {
+  const h = hm.getSection('hero');
+  heroMode = h.mode || 'full';
+  switchModalTab('hero', heroMode);
+  document.getElementById('h-headline').value  = h.headline || '';
+  document.getElementById('h-sub').value       = h.subheadline || '';
+  document.getElementById('h-cta1-text').value = h.cta1_text || '';
+  document.getElementById('h-cta1-link').value = h.cta1_link || '';
+  document.getElementById('h-cta2-text').value = h.cta2_text || '';
+  document.getElementById('h-cta2-link').value = h.cta2_link || '';
+  document.getElementById('h-image').value     = h.image || '';
+  const bg = h.bg_color || '#1a1a1a';
+  document.getElementById('h-bg-color').value  = bg;
+  document.getElementById('h-bg-hex').value    = bg;
+  document.getElementById('h-img-only').value  = h.image || '';
+  document.getElementById('h-img-link').value  = h.cta1_link || '';
+  document.getElementById('modal-hero').classList.add('open');
+}
+
+function saveHero() {
+  const d = hm.get();
+  if (heroMode === 'full') {
+    d.hero = {
+      mode:        'full',
+      headline:    document.getElementById('h-headline').value,
+      subheadline: document.getElementById('h-sub').value,
+      cta1_text:   document.getElementById('h-cta1-text').value,
+      cta1_link:   document.getElementById('h-cta1-link').value,
+      cta2_text:   document.getElementById('h-cta2-text').value,
+      cta2_link:   document.getElementById('h-cta2-link').value,
+      image:       document.getElementById('h-image').value,
+      bg_color:    document.getElementById('h-bg-hex').value || '#1a1a1a',
+    };
+  } else {
+    d.hero = {
+      mode:      'image_only',
+      image:     document.getElementById('h-img-only').value,
+      cta1_link: document.getElementById('h-img-link').value,
+    };
+  }
+  hm.save(d);
+  closeModal('modal-hero');
+  loadHomeEditor();
+}
+
+// ── LIFESTYLE MODAL ──────────────────────────────────────
+function openLifestyleModal() {
+  const cards = hm.getSection('lifestyle') || [];
+  document.getElementById('lifestyle-edit-list').innerHTML = cards.map((c, i) => `
+    <div style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:10px;color:var(--muted)">CARD ${i+1}</div>
+      <div class="fg"><label>Título</label><input id="lc-title-${i}" value="${c.title}"></div>
+      <div class="fg"><label>Descripción</label><textarea id="lc-desc-${i}">${c.desc}</textarea></div>
+      <div class="fg-row">
+        <div class="fg"><label>Imagen</label><input id="lc-img-${i}" value="${c.image}"></div>
+        <div class="fg"><label>Link</label><input id="lc-link-${i}" value="${c.link}"></div>
+      </div>
+      <div class="fg"><label>Texto del link</label><input id="lc-linktext-${i}" value="${c.link_text}"></div>
+    </div>`).join('');
+  document.getElementById('modal-lifestyle').classList.add('open');
+}
+
+function openLifestyleCardModal(id) { openLifestyleModal(); }
+
+function saveLifestyle() {
+  const cards = hm.getSection('lifestyle') || [];
+  const updated = cards.map((c, i) => ({
+    ...c,
+    title:     document.getElementById(`lc-title-${i}`)?.value    || c.title,
+    desc:      document.getElementById(`lc-desc-${i}`)?.value     || c.desc,
+    image:     document.getElementById(`lc-img-${i}`)?.value      || c.image,
+    link:      document.getElementById(`lc-link-${i}`)?.value     || c.link,
+    link_text: document.getElementById(`lc-linktext-${i}`)?.value || c.link_text,
+  }));
+  const d = hm.get(); d.lifestyle = updated; hm.save(d);
+  closeModal('modal-lifestyle');
+  loadHomeEditor();
+}
+
+// ── SERIES MODAL ─────────────────────────────────────────
+function openSeriesModal() {
+  const series = hm.getSection('series') || [];
+  document.getElementById('series-edit-list').innerHTML = series.map((s, i) => `
+    <div style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--muted)">ITEM ${i+1}</div>
+      <div class="fg-row">
+        <div class="fg"><label>Título</label><input id="sr-title-${i}" value="${s.title}"></div>
+        <div class="fg"><label>Link</label><input id="sr-link-${i}" value="${s.link}"></div>
+      </div>
+      <div class="fg"><label>Imagen</label><input id="sr-img-${i}" value="${s.image}"></div>
+    </div>`).join('');
+  document.getElementById('modal-series').classList.add('open');
+}
+
+function saveSeries() {
+  const series = hm.getSection('series') || [];
+  const updated = series.map((s, i) => ({
+    ...s,
+    title: document.getElementById(`sr-title-${i}`)?.value || s.title,
+    link:  document.getElementById(`sr-link-${i}`)?.value  || s.link,
+    image: document.getElementById(`sr-img-${i}`)?.value   || s.image,
+  }));
+  const d = hm.get(); d.series = updated; hm.save(d);
+  closeModal('modal-series');
+  loadHomeEditor();
+}
+
+// ── CAT IMAGES MODAL ─────────────────────────────────────
+function openCatImgModal() {
+  const cats    = cx.getCategories();
+  const catImgs = hm.getSection('cat_images') || {};
+  document.getElementById('cat-img-edit-list').innerHTML = cats.map(c => `
+    <div class="fg">
+      <label>${c.label} (${c.id})</label>
+      <input id="ci-${c.id}" value="${catImgs[c.id]||''}">
+    </div>`).join('');
+  document.getElementById('modal-cat-img').classList.add('open');
+}
+
+function saveCatImgs() {
+  const cats = cx.getCategories();
+  const imgs = {};
+  cats.forEach(c => { imgs[c.id] = document.getElementById(`ci-${c.id}`)?.value || ''; });
+  const d = hm.get(); d.cat_images = imgs; hm.save(d);
+  closeModal('modal-cat-img');
+  loadHomeEditor();
+}
+
+// ── BANNER MODAL (crosssell / institutional) ─────────────
+function openBannerModal(key) {
+  const b = hm.getSection(key);
+  document.getElementById('banner-key').value = key;
+  document.getElementById('banner-modal-title').textContent =
+    key === 'crosssell' ? 'Editar Banner Crosssell' : 'Editar Banner Institucional';
+  bannerMode = b.mode || 'full';
+  switchModalTab('banner', bannerMode);
+  document.getElementById('b-title').value    = b.title || '';
+  document.getElementById('b-desc').value     = b.desc  || '';
+  document.getElementById('b-cta-text').value = b.cta_text || '';
+  document.getElementById('b-cta-link').value = b.cta_link || '';
+  document.getElementById('b-image').value    = b.image || '';
+  const bg = b.bg_color || '#e8f8fb';
+  document.getElementById('b-bg-color').value = bg;
+  document.getElementById('b-bg-hex').value   = bg;
+  document.getElementById('b-img-only').value = b.image || '';
+  document.getElementById('b-img-link').value = b.cta_link || '';
+  document.getElementById('modal-banner').classList.add('open');
+}
+
+function saveBanner() {
+  const key = document.getElementById('banner-key').value;
+  const d   = hm.get();
+  if (bannerMode === 'full') {
+    d[key] = {
+      mode:     'full',
+      title:    document.getElementById('b-title').value,
+      desc:     document.getElementById('b-desc').value,
+      cta_text: document.getElementById('b-cta-text').value,
+      cta_link: document.getElementById('b-cta-link').value,
+      image:    document.getElementById('b-image').value,
+      bg_color: document.getElementById('b-bg-hex').value,
+    };
+  } else {
+    d[key] = {
+      mode:      'image_only',
+      image:     document.getElementById('b-img-only').value,
+      cta_link:  document.getElementById('b-img-link').value,
+    };
+  }
+  hm.save(d);
+  closeModal('modal-banner');
+  loadHomeEditor();
+}
+
+// ── CATEGORY BANNERS ─────────────────────────────────────
+function loadCatBanners() {
+  const cats    = cx.getCategories();
+  const banners = JSON.parse(localStorage.getItem('cx_cat_banners') || '{}');
+
+  document.getElementById('cat-banners-list').innerHTML = cats.map(c => {
+    const b = banners[c.id] || { mode:'full', title:c.label, desc:c.desc||'', image:'', bg_color:'#1a1a1a' };
+    return `<div class="home-block" style="margin-bottom:14px">
+      <div class="home-block-title">
+        ${c.label}
+        <button class="btn-edit-block" onclick="openCatBannerModal('${c.id}')">Editar</button>
+      </div>
+      <div class="home-block-preview" id="cat-banner-preview-${c.id}">
+        <span class="mode-badge ${b.mode==='full'?'mode-full':'mode-img'}">${b.mode==='full'?'Con texto':'Solo imagen'}</span>
+        ${b.mode==='full' ? `<br><strong>${b.title}</strong><br>${b.desc}` : `Link: ${b.cta_link||'#'}`}
+        ${b.image ? `<img src="${b.image}" onerror="this.style.display='none'">` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let currentCatBannerId = '';
+function openCatBannerModal(catId) {
+  currentCatBannerId = catId;
+  const cat     = cx.getCategories().find(c => c.id === catId);
+  const banners = JSON.parse(localStorage.getItem('cx_cat_banners') || '{}');
+  const b       = banners[catId] || { mode:'full', title: cat?.label||'', desc: cat?.desc||'', image:'', bg_color:'#1a1a1a', cta_link:'', cta_text:'' };
+
+  document.getElementById('banner-key').value          = 'cat_' + catId;
+  document.getElementById('banner-modal-title').textContent = `Hero — ${cat?.label || catId}`;
+  bannerMode = b.mode || 'full';
+  switchModalTab('banner', bannerMode);
+  document.getElementById('b-title').value    = b.title    || '';
+  document.getElementById('b-desc').value     = b.desc     || '';
+  document.getElementById('b-cta-text').value = b.cta_text || '';
+  document.getElementById('b-cta-link').value = b.cta_link || '';
+  document.getElementById('b-image').value    = b.image    || '';
+  const bg = b.bg_color || '#1a1a1a';
+  document.getElementById('b-bg-color').value = bg;
+  document.getElementById('b-bg-hex').value   = bg;
+  document.getElementById('b-img-only').value = b.image    || '';
+  document.getElementById('b-img-link').value = b.cta_link || '';
+
+  // Override save to go to cat banners
+  document.querySelector('#modal-banner .btn-save').onclick = saveCatBanner;
+  document.getElementById('modal-banner').classList.add('open');
+}
+
+function saveCatBanner() {
+  const banners = JSON.parse(localStorage.getItem('cx_cat_banners') || '{}');
+  if (bannerMode === 'full') {
+    banners[currentCatBannerId] = {
+      mode:     'full',
+      title:    document.getElementById('b-title').value,
+      desc:     document.getElementById('b-desc').value,
+      cta_text: document.getElementById('b-cta-text').value,
+      cta_link: document.getElementById('b-cta-link').value,
+      image:    document.getElementById('b-image').value,
+      bg_color: document.getElementById('b-bg-hex').value,
+    };
+  } else {
+    banners[currentCatBannerId] = {
+      mode:     'image_only',
+      image:    document.getElementById('b-img-only').value,
+      cta_link: document.getElementById('b-img-link').value,
+    };
+  }
+  localStorage.setItem('cx_cat_banners', JSON.stringify(banners));
+  // Reset save button
+  document.querySelector('#modal-banner .btn-save').onclick = saveBanner;
+  closeModal('modal-banner');
+  loadCatBanners();
+}
+
+// ── PRODUCTS ─────────────────────────────────────────────
+function loadProds() {
+  document.getElementById('prods-tbody').innerHTML = cx.getProducts().map(p => {
+    const cat = cx.getCategories().find(c => c.id === p.category);
     return `<tr>
       <td><img src="${p.image}" onerror="this.style.opacity='.2'"></td>
       <td><a href="product.html?id=${p.id}" target="_blank" style="color:var(--accent)">${p.name}</a></td>
@@ -162,29 +740,99 @@ function loadProds(){
       <td>${p.featured?'⭐':''}</td>
       <td><div class="tbl-actions">
         <button class="btn-edit" onclick="openProdModal('${p.id}')">Editar</button>
-        <button class="btn-del" onclick="if(confirm('¿Eliminar?')){cx.deleteProduct('${p.id}');loadAll()}">Eliminar</button>
+        <button class="btn-del" onclick="if(confirm('¿Eliminar?')){cx.deleteProduct('${p.id}');loadProds();loadDash()}">Eliminar</button>
       </div></td>
     </tr>`;
   }).join('');
 }
 
-function loadCats(){
-  document.getElementById('cats-tbody').innerHTML=cx.getCategories().map(c=>`<tr>
+function openProdModal(id) {
+  document.getElementById('prod-modal-title').textContent = id ? 'Editar producto' : 'Nuevo producto';
+  document.getElementById('edit-prod-id').value = id || '';
+  document.getElementById('f-cat').innerHTML = cx.getCategories().map(c => `<option value="${c.id}">${c.label}</option>`).join('');
+  ['f-name','f-sku','f-price','f-oldprice','f-image','f-shortdesc','f-longdesc'].forEach(x => document.getElementById(x).value = '');
+  document.getElementById('f-stock').value = '10';
+  document.getElementById('f-badge').value = '';
+  document.getElementById('f-featured').checked = false;
+  if (id) {
+    const p = cx.getById(id); if (!p) return;
+    document.getElementById('f-name').value     = p.name;
+    document.getElementById('f-sku').value      = p.sku || '';
+    document.getElementById('f-cat').value      = p.category;
+    document.getElementById('f-price').value    = p.price;
+    document.getElementById('f-oldprice').value = p.oldPrice || '';
+    document.getElementById('f-stock').value    = p.stock || 10;
+    document.getElementById('f-image').value    = p.image || '';
+    document.getElementById('f-shortdesc').value= p.shortDesc || '';
+    document.getElementById('f-longdesc').value = p.longDesc || '';
+    document.getElementById('f-badge').value    = p.badge || '';
+    document.getElementById('f-featured').checked = !!p.featured;
+  }
+  document.getElementById('modal-prod').classList.add('open');
+}
+
+function saveProd() {
+  const id = document.getElementById('edit-prod-id').value;
+  const data = {
+    name: document.getElementById('f-name').value.trim(),
+    sku: document.getElementById('f-sku').value.trim(),
+    category: document.getElementById('f-cat').value,
+    price: parseFloat(document.getElementById('f-price').value) || 0,
+    oldPrice: parseFloat(document.getElementById('f-oldprice').value) || null,
+    stock: parseInt(document.getElementById('f-stock').value) || 10,
+    image: document.getElementById('f-image').value.trim(),
+    shortDesc: document.getElementById('f-shortdesc').value.trim(),
+    longDesc: document.getElementById('f-longdesc').value.trim(),
+    badge: document.getElementById('f-badge').value || null,
+    featured: document.getElementById('f-featured').checked,
+    specs: [],
+  };
+  if (!data.name || !data.price) return alert('Nombre y precio son obligatorios.');
+  if (id) cx.updateProduct(id, data); else cx.addProduct(data);
+  closeModal('modal-prod'); loadProds(); loadDash();
+}
+
+// ── CATEGORIES ───────────────────────────────────────────
+function loadCats() {
+  document.getElementById('cats-tbody').innerHTML = cx.getCategories().map(c => `<tr>
     <td><strong>${c.label}</strong></td>
     <td><code style="font-size:11px;background:#f5f5f5;padding:2px 6px;border-radius:3px">${c.id}</code></td>
     <td>${cx.getByCat(c.id).length}</td>
     <td style="font-size:12px;color:var(--muted)">${c.desc||''}</td>
     <td><div class="tbl-actions">
       <button class="btn-edit" onclick="openCatModal('${c.id}')">Editar</button>
-      <button class="btn-del" onclick="if(confirm('¿Eliminar?')){cx.deleteCategory('${c.id}');loadAll()}">Eliminar</button>
+      <button class="btn-del" onclick="if(confirm('¿Eliminar?')){cx.deleteCategory('${c.id}');loadCats();loadDash()}">Eliminar</button>
     </div></td>
   </tr>`).join('');
 }
 
-function loadOrders(){
-  const orders=JSON.parse(localStorage.getItem('cx_orders')||'[]');
-  document.getElementById('orders-tbody').innerHTML=orders.length
-    ? [...orders].reverse().map(o=>`<tr>
+function openCatModal(id) {
+  document.getElementById('cat-modal-title').textContent = id ? 'Editar categoría' : 'Nueva categoría';
+  document.getElementById('edit-cat-id').value = id || '';
+  document.getElementById('fc-name').value = '';
+  document.getElementById('fc-desc').value = '';
+  if (id) {
+    const c = cx.getCategories().find(x => x.id === id); if (!c) return;
+    document.getElementById('fc-name').value = c.label;
+    document.getElementById('fc-desc').value = c.desc || '';
+  }
+  document.getElementById('modal-cat').classList.add('open');
+}
+
+function saveCat() {
+  const id    = document.getElementById('edit-cat-id').value;
+  const label = document.getElementById('fc-name').value.trim();
+  const desc  = document.getElementById('fc-desc').value.trim();
+  if (!label) return alert('El nombre es obligatorio.');
+  if (id) cx.updateCategory(id, { label, desc }); else cx.addCategory({ label, desc });
+  closeModal('modal-cat'); loadCats(); loadDash();
+}
+
+// ── ORDERS ───────────────────────────────────────────────
+function loadOrders() {
+  const orders = JSON.parse(localStorage.getItem('cx_orders') || '[]');
+  document.getElementById('orders-tbody').innerHTML = orders.length
+    ? [...orders].reverse().map(o => `<tr>
         <td style="font-family:monospace;font-size:11px">${o.id}</td>
         <td>${o.date}</td>
         <td>${o.customer?.nombre||''} ${o.customer?.apellido||''}<br><small style="color:var(--muted)">${o.customer?.email||''}</small></td>
@@ -194,77 +842,21 @@ function loadOrders(){
     : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">No hay pedidos aún</td></tr>';
 }
 
-// ── PRODUCT MODAL ─────────────────────────────────────
-function openProdModal(id){
-  document.getElementById('prod-modal-title').textContent=id?'Editar producto':'Nuevo producto';
-  document.getElementById('edit-prod-id').value=id||'';
-  document.getElementById('f-cat').innerHTML=cx.getCategories().map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
-  ['f-name','f-sku','f-price','f-oldprice','f-image','f-shortdesc','f-longdesc'].forEach(x=>document.getElementById(x).value='');
-  document.getElementById('f-stock').value='10';
-  document.getElementById('f-badge').value='';
-  document.getElementById('f-featured').checked=false;
-  if(id){
-    const p=cx.getById(id); if(!p)return;
-    document.getElementById('f-name').value=p.name;
-    document.getElementById('f-sku').value=p.sku||'';
-    document.getElementById('f-cat').value=p.category;
-    document.getElementById('f-price').value=p.price;
-    document.getElementById('f-oldprice').value=p.oldPrice||'';
-    document.getElementById('f-stock').value=p.stock||10;
-    document.getElementById('f-image').value=p.image||'';
-    document.getElementById('f-shortdesc').value=p.shortDesc||'';
-    document.getElementById('f-longdesc').value=p.longDesc||'';
-    document.getElementById('f-badge').value=p.badge||'';
-    document.getElementById('f-featured').checked=!!p.featured;
+// ── UTILS ────────────────────────────────────────────────
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  // Reset cat banner save button
+  if (id === 'modal-banner') {
+    document.querySelector('#modal-banner .btn-save').onclick = saveBanner;
   }
-  document.getElementById('modal-prod').classList.add('open');
 }
 
-function saveProd(){
-  const id=document.getElementById('edit-prod-id').value;
-  const data={
-    name:      document.getElementById('f-name').value.trim(),
-    sku:       document.getElementById('f-sku').value.trim(),
-    category:  document.getElementById('f-cat').value,
-    price:     parseFloat(document.getElementById('f-price').value)||0,
-    oldPrice:  parseFloat(document.getElementById('f-oldprice').value)||null,
-    stock:     parseInt(document.getElementById('f-stock').value)||10,
-    image:     document.getElementById('f-image').value.trim(),
-    shortDesc: document.getElementById('f-shortdesc').value.trim(),
-    longDesc:  document.getElementById('f-longdesc').value.trim(),
-    badge:     document.getElementById('f-badge').value||null,
-    featured:  document.getElementById('f-featured').checked,
-    specs:[],
-  };
-  if(!data.name||!data.price)return alert('Nombre y precio son obligatorios.');
-  if(id)cx.updateProduct(id,data); else cx.addProduct(data);
-  closeModal('modal-prod'); loadAll();
-}
-
-// ── CATEGORY MODAL ────────────────────────────────────
-function openCatModal(id){
-  document.getElementById('cat-modal-title').textContent=id?'Editar categoría':'Nueva categoría';
-  document.getElementById('edit-cat-id').value=id||'';
-  document.getElementById('fc-name').value='';
-  document.getElementById('fc-desc').value='';
-  if(id){
-    const c=cx.getCategories().find(x=>x.id===id); if(!c)return;
-    document.getElementById('fc-name').value=c.label;
-    document.getElementById('fc-desc').value=c.desc||'';
+function resetAll() {
+  if (confirm('¿Resetear todos los datos a los valores por defecto? No se puede deshacer.')) {
+    ['cx_prods','cx_cats','cx_home','cx_cart','cx_orders','cx_cat_banners'].forEach(k => localStorage.removeItem(k));
+    location.reload();
   }
-  document.getElementById('modal-cat').classList.add('open');
 }
-
-function saveCat(){
-  const id=document.getElementById('edit-cat-id').value;
-  const label=document.getElementById('fc-name').value.trim();
-  const desc=document.getElementById('fc-desc').value.trim();
-  if(!label)return alert('El nombre es obligatorio.');
-  if(id)cx.updateCategory(id,{label,desc}); else cx.addCategory({label,desc});
-  closeModal('modal-cat'); loadAll();
-}
-
-function closeModal(id){document.getElementById(id).classList.remove('open');}
 </script>
 </body>
 </html>

@@ -9,85 +9,184 @@
 
 <div id="cx-nav"></div>
 
-<!-- HERO -->
-<section class="home-hero">
-  <div class="hero-text">
-    <span class="hero-tag">Tecnología argentina</span>
-    <h1>Equipos para<br>trabajar y crecer</h1>
-    <p>Notebooks, Mini PCs y computadoras de escritorio con garantía oficial. Calidad CX para el hogar y la empresa.</p>
-    <div class="hero-actions">
-      <a href="category.html" class="btn-primary">Ver productos</a>
-      <a href="category.html?id=notebooks" class="btn-outline-white">Notebooks</a>
-    </div>
-  </div>
-  <div class="hero-img">
-    <img src="img/CX30615.png" alt="CX Notebook">
+<!-- ① HERO -->
+<div id="home-hero"></div>
+
+<!-- ② LIFESTYLE CARDS -->
+<section class="lifestyle-section">
+  <div class="page-wrap">
+    <div class="lifestyle-grid" id="lifestyle-grid"></div>
   </div>
 </section>
 
-<!-- CATEGORÍAS -->
-<section class="home-cats">
+<!-- ③ PRODUCT TABS -->
+<section class="prod-tabs-section">
   <div class="page-wrap">
-    <div class="section-header">
-      <div>
-        <div class="section-tag">Explorá</div>
-        <h2>Categorías</h2>
+    <div class="tabs-header">
+      <div class="tabs-nav">
+        <button class="tab-btn" data-tab="featured" onclick="switchTab('featured')">SUPERVENTAS</button>
+        <button class="tab-btn" data-tab="new"      onclick="switchTab('new')">NOVEDADES</button>
+        <button class="tab-btn" data-tab="sale"     onclick="switchTab('sale')">RECOMENDADOS</button>
       </div>
     </div>
-    <div class="cats-grid" id="catsGrid"></div>
+    <div class="tabs-grid" id="tabs-grid"></div>
   </div>
 </section>
 
-<!-- DESTACADOS -->
-<section class="home-featured">
+<!-- ④ SERIES GRID -->
+<section class="series-section">
   <div class="page-wrap">
-    <div class="section-header">
-      <div>
-        <div class="section-tag">Lo más vendido</div>
-        <h2>Productos destacados</h2>
-      </div>
-      <a href="category.html" class="see-all-link">Ver todos →</a>
-    </div>
-    <div class="featured-grid" id="featuredGrid"></div>
+    <div class="series-section-title">DESCUBRE LAS SERIES</div>
+    <div class="series-grid" id="series-grid"></div>
   </div>
 </section>
 
-<!-- CROSSSELL BANNER -->
-<div class="page-wrap" style="padding-top:48px">
-  <div class="crosssell-banner">
-    <div>
-      <h2>Mini PCs CX</h2>
-      <p>Potencia máxima en el mínimo espacio. Perfectos para oficina, hogar o como media center.</p>
-      <a href="category.html?id=mini-pcs" class="btn-accent">Conocer más →</a>
-    </div>
-    <div class="crosssell-imgs">
-      <img src="img/CX54214.png" alt="CX Mini PC">
-    </div>
+<!-- ⑤ CATEGORIES GRID -->
+<section class="home-cats-section">
+  <div class="page-wrap">
+    <div class="home-cats-title">DESCUBRE PRODUCTOS</div>
+    <div class="home-cats-grid" id="home-cats-grid"></div>
   </div>
-</div>
+</section>
+
+<!-- ⑥ INSTITUTIONAL BANNER -->
+<div class="institutional-section page-wrap" id="institutional-wrap"></div>
+
+<!-- ⑦ CROSSSELL -->
+<div class="crosssell-section page-wrap" id="crosssell-wrap"></div>
 
 <div id="cx-footer"></div>
+
 <script src="js/data.js"></script>
+<script src="js/home-data.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const cats = cx.getCategories();
-  const CAT_IMGS = {
-    'notebooks':  'img/CX30415.png',
-    'mini-pcs':   'img/CX54214.png',
-    'pcs':        'img/CX73567.png',
-    'gabinetes':  'img/CX73567.png',
-  };
-  document.getElementById('catsGrid').innerHTML = cats.map(c => `
-    <a href="category.html?id=${c.id}" class="cat-card">
-      <div class="cat-card-img">
-        <img src="${CAT_IMGS[c.id]||''}" alt="${c.label}" onerror="this.style.display='none'">
-      </div>
-      <h3>${c.label}</h3>
-      <p>${c.desc}</p>
-    </a>`).join('');
-
-  document.getElementById('featuredGrid').innerHTML = cx.getFeatured().slice(0,4).map(productCard).join('');
+  renderHero();
+  renderLifestyle();
+  renderTabs();
+  renderSeries();
+  renderHomeCats();
+  renderInstitutional();
+  renderCrosssell();
 });
+
+function renderHero() {
+  const h = hm.getSection('hero');
+  const wrap = document.getElementById('home-hero');
+  if (h.mode === 'image_only') {
+    wrap.innerHTML = `<a href="${h.cta1_link||'#'}" class="home-hero-fw image-only" style="background:${h.bg_color||'#1a1a1a'};display:block">
+      <img class="hero-bg-img" src="${h.image}" alt="">
+    </a>`;
+    return;
+  }
+  wrap.innerHTML = `<div class="home-hero-fw" style="background:${h.bg_color||'#1a1a1a'}">
+    <div class="hero-inner">
+      <div class="hero-text-col">
+        <div class="hero-headline">${(h.headline||'').replace(/\n/g,'<br>')}</div>
+        <div class="hero-sub">${h.subheadline||''}</div>
+        <div class="hero-btns">
+          <a href="${h.cta1_link||'#'}" class="btn-hero-outline">${h.cta1_text||'Ver más'}</a>
+          <a href="${h.cta2_link||'#'}" class="btn-hero-outline">${h.cta2_text||'Comprar'}</a>
+        </div>
+      </div>
+      <div class="hero-img-col">
+        <img src="${h.image}" alt="CX Hero">
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderLifestyle() {
+  const cards = hm.getSection('lifestyle') || [];
+  document.getElementById('lifestyle-grid').innerHTML = cards.map(c => `
+    <div class="lifestyle-card">
+      <a href="${c.link}" class="lifestyle-card-img">
+        <img src="${c.image}" alt="${c.title}">
+      </a>
+      <div class="lifestyle-card-title">${c.title}</div>
+      <div class="lifestyle-card-desc">${c.desc}</div>
+      <a class="lifestyle-card-link" href="${c.link}">${c.link_text} ›</a>
+    </div>`).join('');
+}
+
+let activeTab = 'featured';
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  renderTabProducts();
+}
+function renderTabs() {
+  const saved = hm.getSection('tabs_active');
+  activeTab = saved || 'featured';
+  switchTab(activeTab);
+}
+function renderTabProducts() {
+  let prods = cx.getProducts();
+  if (activeTab === 'featured') prods = prods.filter(p => p.featured);
+  if (activeTab === 'new')      prods = prods.filter(p => p.badge === 'Nuevo');
+  if (activeTab === 'sale')     prods = prods.filter(p => p.oldPrice);
+  if (!prods.length)            prods = cx.getProducts().slice(0, 4);
+  document.getElementById('tabs-grid').innerHTML = prods.slice(0, 4).map(productCard).join('');
+}
+
+function renderSeries() {
+  const series = hm.getSection('series') || [];
+  document.getElementById('series-grid').innerHTML = series.map(s => `
+    <a href="${s.link}" class="series-card">
+      <img class="series-img" src="${s.image}" alt="${s.title}">
+      <div class="series-overlay"></div>
+      <div class="series-label">${s.title}</div>
+    </a>`).join('');
+}
+
+function renderHomeCats() {
+  const cats    = cx.getCategories();
+  const catImgs = hm.getSection('cat_images') || {};
+  document.getElementById('home-cats-grid').innerHTML = cats.map(c => `
+    <a href="category.html?id=${c.id}" class="home-cat-card">
+      <img src="${catImgs[c.id]||''}" alt="${c.label}" onerror="this.style.display='none'">
+      <div class="home-cat-card-name">${c.label}</div>
+    </a>`).join('');
+}
+
+function renderInstitutional() {
+  const b    = hm.getSection('institutional');
+  const wrap = document.getElementById('institutional-wrap');
+  if (b.mode === 'image_only') {
+    wrap.innerHTML = `<a href="${b.cta_link||'#'}" class="institutional-banner image-only">
+      <img class="inst-bg" src="${b.image}" alt="">
+    </a>`;
+    return;
+  }
+  wrap.innerHTML = `<div class="institutional-banner" style="background:${b.bg_color||'#f2f2f2'}">
+    <div class="institutional-inner">
+      <h2>${b.title}</h2>
+      <p>${b.desc}</p>
+      <a href="${b.cta_link}" class="btn-accent">${b.cta_text} →</a>
+    </div>
+  </div>`;
+}
+
+function renderCrosssell() {
+  const b    = hm.getSection('crosssell');
+  const wrap = document.getElementById('crosssell-wrap');
+  if (b.mode === 'image_only') {
+    wrap.innerHTML = `<a href="${b.cta_link||'#'}" class="crosssell-fw image-only">
+      <img src="${b.image}" alt="">
+    </a>`;
+    return;
+  }
+  wrap.innerHTML = `<div class="crosssell-fw" style="background:${b.bg_color||'#e8f8fb'}">
+    <div class="crosssell-text">
+      <h2>${b.title}</h2>
+      <p>${b.desc}</p>
+      <a href="${b.cta_link}" class="btn-accent">${b.cta_text} →</a>
+    </div>
+    <div class="crosssell-img-col">
+      <img src="${b.image}" alt="${b.title}">
+    </div>
+  </div>`;
+}
 </script>
 </body>
 </html>
