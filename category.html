@@ -2,128 +2,222 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tienda — CX Technology</title>
+<title>Catálogo — CX Technology</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="site-nav"></div>
 
-<div class="page-shop">
+<div id="cx-nav"></div>
+
+<div class="page-wrap">
   <div class="breadcrumb">
-    <a href="index.html">Inicio</a><span class="sep">/</span>
-    <a href="category.html">Tienda</a>
-    <span id="bc-extra"></span>
+    <a href="index.html">CX</a>
+    <span class="sep">›</span>
+    <a href="category.html">Productos</a>
+    <span class="sep" id="bc-sep" style="display:none">›</span>
+    <span class="current" id="bc-current"></span>
   </div>
 
-  <div class="shop-layout">
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <div class="sidebar-title">Filtrar</div>
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <button class="btn-all-filters" onclick="toggleAllFilters()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+      Todos los filtros
+    </button>
 
-      <div class="sidebar-section">
-        <h3>Categoría</h3>
-        <ul class="cat-list" id="catList"></ul>
-      </div>
-
-      <div class="sidebar-section">
-        <h3>Precio (USD)</h3>
-        <div class="price-row-f">
-          <input class="price-input" id="pmin" type="number" placeholder="Mín">
-          <input class="price-input" id="pmax" type="number" placeholder="Máx">
-        </div>
-        <button class="apply-btn" onclick="applyFilters()">Aplicar</button>
-      </div>
-
-      <div class="sidebar-section">
-        <h3>Destacados</h3>
-        <ul class="cat-list">
-          <li><a href="category.html?featured=1">⭐ Más vendidos</a></li>
-          <li><a href="category.html?badge=Nuevo">✨ Novedades</a></li>
-          <li><a href="category.html?sale=1">🏷️ Ofertas</a></li>
-        </ul>
-      </div>
-    </aside>
-
-    <!-- MAIN -->
-    <div>
-      <div id="cat-hero"></div>
-
-      <div class="shop-toolbar">
-        <span class="result-info"><strong id="count">0</strong> productos</span>
-        <div class="sort-row">
-          <span class="sort-label">Ordenar:</span>
-          <select class="sort-sel" id="sortSel" onchange="applyFilters()">
-            <option value="">Más relevantes</option>
-            <option value="price-asc">Menor precio</option>
-            <option value="price-desc">Mayor precio</option>
-            <option value="name">A–Z</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="prod-grid-shop" id="prodGrid"></div>
+    <div class="filter-drop" id="drop-cat">
+      <button class="filter-drop-btn" onclick="toggleDrop('drop-cat')">
+        Categoría
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="filter-drop-menu" id="menu-cat"></div>
     </div>
+
+    <div class="filter-drop" id="drop-sort">
+      <button class="filter-drop-btn" onclick="toggleDrop('drop-sort')">
+        Ordenar
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="filter-drop-menu">
+        <a href="#" onclick="setSort('default',this)">Relevancia</a>
+        <a href="#" onclick="setSort('price-asc',this)">Menor precio</a>
+        <a href="#" onclick="setSort('price-desc',this)">Mayor precio</a>
+        <a href="#" onclick="setSort('name',this)">Nombre A–Z</a>
+      </div>
+    </div>
+
+    <div class="filter-drop" id="drop-badge">
+      <button class="filter-drop-btn" onclick="toggleDrop('drop-badge')">
+        Destacados
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="filter-drop-menu">
+        <a href="#" onclick="setBadge('',this)">Todos</a>
+        <a href="#" onclick="setBadge('Superventas',this)">Superventas</a>
+        <a href="#" onclick="setBadge('Nuevo',this)">Novedades</a>
+        <a href="#" onclick="setBadge('oferta',this)">Ofertas</a>
+      </div>
+    </div>
+
+    <span class="result-count" id="resultCount"></span>
+  </div>
+
+  <!-- CATALOG GRID -->
+  <div class="catalog-grid" id="catalogGrid"></div>
+
+  <!-- LOAD MORE -->
+  <div class="load-more-wrap" id="loadMoreWrap" style="display:none">
+    <p class="load-more-info" id="loadMoreInfo"></p>
+    <button class="btn-load-more" onclick="loadMore()">CARGAR MÁS</button>
   </div>
 </div>
 
-<div id="site-footer"></div>
+<div id="cx-footer"></div>
 <script src="js/data.js"></script>
 <script>
-const p = new URLSearchParams(location.search);
-const catId    = p.get('id');
-const featured = p.get('featured');
-const badge    = p.get('badge');
-const sale     = p.get('sale');
+const params   = new URLSearchParams(location.search);
+let activeCat  = params.get('id') || '';
+let activeSort = 'default';
+let activeBadge = '';
+let visibleCount = 6;
+const PAGE_SIZE  = 6;
 
-const cat = cx.getCategories().find(c => c.id === catId);
+document.addEventListener('DOMContentLoaded', () => {
+  // Build category filter menu
+  const cats = cx.getCategories();
+  const menuCat = document.getElementById('menu-cat');
+  menuCat.innerHTML =
+    `<a href="#" onclick="setCat('',this)" class="${!activeCat?'active':''}">Todas las categorías</a>` +
+    cats.map(c =>
+      `<a href="#" onclick="setCat('${c.id}',this)" class="${c.id===activeCat?'active':''}">${c.label}</a>`
+    ).join('');
 
-renderNav(catId || '');
-renderFooter();
-renderCartDrawer();
+  // Breadcrumb
+  if(activeCat){
+    const cat = cats.find(c=>c.id===activeCat);
+    if(cat){
+      document.getElementById('bc-sep').style.display='';
+      document.getElementById('bc-current').textContent=cat.label;
+      document.title = cat.label + ' — CX Technology';
+    }
+  }
 
-if (cat) document.title = `${cat.label} — CX Technology`;
+  render();
+});
 
-// Breadcrumb extra
-if (cat) document.getElementById('bc-extra').innerHTML = `<span class="sep">/</span><span class="bc-current">${cat.label}</span>`;
+function getFiltered() {
+  let prods = activeCat ? cx.getByCat(activeCat) : cx.getProducts();
+  if(activeBadge==='oferta') prods=prods.filter(p=>p.oldPrice);
+  else if(activeBadge) prods=prods.filter(p=>p.badge===activeBadge);
+  if(activeSort==='price-asc')  prods.sort((a,b)=>a.price-b.price);
+  if(activeSort==='price-desc') prods.sort((a,b)=>b.price-a.price);
+  if(activeSort==='name')       prods.sort((a,b)=>a.name.localeCompare(b.name));
+  return prods;
+}
 
-// Sidebar cat list
-document.getElementById('catList').innerHTML =
-  `<li class="${!catId?'active':''}"><a href="category.html">Todos <span>${cx.getProducts().length}</span></a></li>` +
-  cx.getCategories().map(c =>
-    `<li class="${c.id===catId?'active':''}"><a href="category.html?id=${c.id}">${c.label} <span>${cx.getByCategory(c.id).length}</span></a></li>`
-  ).join('');
+function render() {
+  const prods  = getFiltered();
+  const cats   = cx.getCategories();
+  const cat    = cats.find(c=>c.id===activeCat);
+  const grid   = document.getElementById('catalogGrid');
+  const visible = prods.slice(0, visibleCount);
 
-// Cat hero banner (red, like in our design)
-if (cat) {
-  document.getElementById('cat-hero').innerHTML = `
-    <div class="cat-hero-red">
-      <h1>${cat.label}</h1>
-      <p>${cat.description}</p>
+  document.getElementById('resultCount').innerHTML =
+    `Mostrando <strong>${Math.min(visibleCount, prods.length)}</strong> de <strong>${prods.length}</strong> productos`;
+
+  // Build grid — hero card first, then products
+  let html = '';
+
+  // Hero banner (cat or generic)
+  const heroTitle = cat ? cat.label : 'Todos los productos';
+  const heroDesc  = cat ? cat.desc  : 'Notebooks, Mini PCs, PCs de escritorio y gabinetes CX.';
+  const heroImg   = cat
+    ? (prods[0] ? prods[0].image : '')
+    : 'img/CX30615.png';
+
+  html += `<div class="cat-hero-card">
+    <div class="hero-card-text">
+      <h1>${heroTitle}</h1>
+      <p>${heroDesc}</p>
+    </div>
+    <div class="hero-card-img">
+      <img src="${heroImg}" alt="${heroTitle}" onerror="this.style.opacity='.3'">
+    </div>
+  </div>`;
+
+  // First product in col 3 of row 1 (if exists)
+  if(visible.length > 0) html += productCard(visible[0]);
+
+  // Rest of products
+  for(let i=1; i<visible.length; i++) html += productCard(visible[i]);
+
+  if(!prods.length){
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px 0;color:var(--muted)">
+      <p style="font-size:16px">No se encontraron productos en esta categoría.</p>
+      <a href="category.html" style="color:var(--accent);margin-top:12px;display:inline-block">Ver todos los productos →</a>
     </div>`;
+    document.getElementById('loadMoreWrap').style.display='none';
+    return;
+  }
+
+  grid.innerHTML = html;
+
+  // Load more
+  const lmWrap = document.getElementById('loadMoreWrap');
+  const lmInfo = document.getElementById('loadMoreInfo');
+  if(prods.length > visibleCount){
+    lmInfo.textContent = `Viendo ${Math.min(visibleCount,prods.length)} de ${prods.length}`;
+    lmWrap.style.display='flex';
+  } else {
+    lmWrap.style.display='none';
+  }
 }
 
-function applyFilters() {
-  let prods = catId ? cx.getByCategory(catId) : cx.getProducts();
-  if (featured) prods = prods.filter(p => p.featured);
-  if (badge)    prods = prods.filter(p => p.badge === badge);
-  if (sale)     prods = prods.filter(p => p.oldPrice);
-
-  const pmin = parseFloat(document.getElementById('pmin').value) || 0;
-  const pmax = parseFloat(document.getElementById('pmax').value) || Infinity;
-  prods = prods.filter(p => p.price >= pmin && p.price <= pmax);
-
-  const sort = document.getElementById('sortSel').value;
-  if (sort === 'price-asc')  prods.sort((a,b) => a.price - b.price);
-  if (sort === 'price-desc') prods.sort((a,b) => b.price - a.price);
-  if (sort === 'name')       prods.sort((a,b) => a.name.localeCompare(b.name));
-
-  document.getElementById('count').textContent = prods.length;
-  document.getElementById('prodGrid').innerHTML = prods.length
-    ? prods.map(productCard).join('')
-    : '<p style="grid-column:1/-1;text-align:center;padding:60px 0;color:#aaa">No se encontraron productos.</p>';
+function loadMore() {
+  visibleCount += PAGE_SIZE;
+  render();
 }
 
-applyFilters();
+function setCat(id, el) {
+  activeCat = id;
+  visibleCount = PAGE_SIZE;
+  document.querySelectorAll('#menu-cat a').forEach(a=>a.classList.remove('active'));
+  if(el) el.classList.add('active');
+  // Update breadcrumb
+  const cats=cx.getCategories();
+  const cat=cats.find(c=>c.id===id);
+  document.getElementById('bc-sep').style.display=id?'':'none';
+  document.getElementById('bc-current').textContent=cat?cat.label:'';
+  closeDrop();
+  render();
+}
+
+function setSort(val, el) {
+  activeSort=val;
+  document.querySelectorAll('#drop-sort .filter-drop-menu a').forEach(a=>a.classList.remove('active'));
+  if(el) el.classList.add('active');
+  closeDrop(); render();
+}
+
+function setBadge(val, el) {
+  activeBadge=val;
+  document.querySelectorAll('#drop-badge .filter-drop-menu a').forEach(a=>a.classList.remove('active'));
+  if(el) el.classList.add('active');
+  closeDrop(); render();
+}
+
+function toggleDrop(id) {
+  const el=document.getElementById(id);
+  const wasOpen=el.classList.contains('open');
+  closeDrop();
+  if(!wasOpen) el.classList.add('open');
+}
+function closeDrop() { document.querySelectorAll('.filter-drop').forEach(d=>d.classList.remove('open')); }
+function toggleAllFilters() { /* puede expandirse */ }
+
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.filter-drop')) closeDrop();
+});
 </script>
 </body>
 </html>

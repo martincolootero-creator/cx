@@ -6,145 +6,146 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="site-nav"></div>
 
-<div class="page-detail">
+<div id="cx-nav"></div>
+
+<div class="page-wrap detail-wrap">
   <div class="breadcrumb" id="breadcrumb">
-    <a href="index.html">Inicio</a><span class="sep">/</span>
-    <a href="category.html">Tienda</a><span class="sep">/</span>
-    <span class="bc-current" id="bc-name">Producto</span>
+    <a href="index.html">CX</a>
+    <span class="sep">›</span>
+    <a href="category.html">Productos</a>
+    <span class="sep">›</span>
+    <span class="current" id="bc-name">Cargando...</span>
   </div>
 
-  <div id="detail-wrap"></div>
-  <div id="related-wrap"></div>
+  <div id="detail-content"></div>
 </div>
 
-<div id="site-footer"></div>
+<div id="cx-footer"></div>
 <script src="js/data.js"></script>
 <script>
-const id = new URLSearchParams(location.search).get('id');
-const p  = cx.getById(id);
+let qty = 1;
 
-renderNav('');
-renderFooter();
-renderCartDrawer();
+document.addEventListener('DOMContentLoaded', () => {
+  const id = new URLSearchParams(location.search).get('id');
+  const p  = cx.getById(id);
 
-if (!p) {
-  document.getElementById('detail-wrap').innerHTML = `<div style="text-align:center;padding:100px 0"><h2>Producto no encontrado</h2><a href="index.html" class="btn-primary" style="margin-top:20px;display:inline-block">Volver al inicio</a></div>`;
-} else {
+  if(!p){
+    document.getElementById('detail-content').innerHTML=`
+      <div style="text-align:center;padding:100px 0">
+        <h2 style="font-size:24px;margin-bottom:12px">Producto no encontrado</h2>
+        <a href="category.html" class="btn-primary">Ver todos los productos</a>
+      </div>`;
+    return;
+  }
+
   document.title = p.name + ' — CX Technology';
   document.getElementById('bc-name').textContent = p.name;
 
   // Update breadcrumb with category
-  const cat = cx.getCategories().find(c => c.id === p.category);
-  if (cat) {
-    document.getElementById('breadcrumb').innerHTML = `
-      <a href="index.html">Inicio</a><span class="sep">/</span>
-      <a href="category.html?id=${p.category}">${cat.label}</a><span class="sep">/</span>
-      <span class="bc-current">${p.name}</span>`;
+  const cat = cx.getCategories().find(c=>c.id===p.category);
+  if(cat){
+    document.getElementById('breadcrumb').innerHTML=`
+      <a href="index.html">CX</a><span class="sep">›</span>
+      <a href="category.html">Productos</a><span class="sep">›</span>
+      <a href="category.html?id=${p.category}">${cat.label}</a><span class="sep">›</span>
+      <span class="current">${p.name}</span>`;
   }
 
-  let selectedColor = 0;
-  const disc = cx.pct(p);
+  const disc=cx.pct(p);
+  let badgeHtml='';
+  if(p.badge==='Superventas') badgeHtml+=`<span class="badge badge-dest">Superventas</span>`;
+  if(p.badge==='Nuevo')       badgeHtml+=`<span class="badge badge-new">Nuevo</span>`;
+  if(disc>0)                  badgeHtml+=`<span class="badge badge-sale">-${disc}%</span>`;
 
-  let badge = '';
-  if (p.badge==='Superventas') badge = `<span class="card-badge cb-super inline-badge">Superventas</span>`;
-  else if (p.badge==='Nuevo')  badge = `<span class="card-badge cb-new inline-badge">Nuevo</span>`;
-  else if (disc>0)             badge = `<span class="card-badge cb-sale inline-badge">-${disc}%</span>`;
-
-  function renderDetail() {
-    document.getElementById('detail-wrap').innerHTML = `
+  document.getElementById('detail-content').innerHTML=`
     <div class="detail-grid">
-      <div class="detail-img-wrap">
-        <div class="detail-img-main">
-          <img id="main-img" src="${p.image}" alt="${p.name}" style="max-height:340px;object-fit:contain" onerror="this.style.opacity='.2'">
-        </div>
-        ${p.colors.length > 1 ? `<div class="detail-thumbs">${p.colors.map((c,i)=>`
-          <button class="detail-thumb${i===selectedColor?' active':''}" onclick="selectColor(${i})" style="background:${c==='#eeeedd'||c.startsWith('#d')||c.startsWith('#e')?c:'var(--card)'}">
-            <div style="width:36px;height:36px;border-radius:8px;background:${c}"></div>
-          </button>`).join('')}</div>` : ''}
+      <div class="detail-gallery">
+        <img class="detail-main-img" src="${p.image}" alt="${p.name}" onerror="this.style.opacity='.2'">
       </div>
 
       <div class="detail-info">
-        ${badge}
+        <div class="detail-badge">${badgeHtml}</div>
         <h1 class="detail-name">${p.name}</h1>
-        <p class="detail-desc">${p.longDescription || p.description}</p>
+        <div class="detail-sku">SKU: ${p.sku}</div>
+        <p class="detail-short-desc">${p.longDesc||p.shortDesc}</p>
 
-        <div class="detail-price-row">
-          <span class="detail-price">${cx.fmt(p.price)}</span>
-          ${p.oldPrice?`<span class="detail-old-price">${cx.fmt(p.oldPrice)}</span><span class="pct-off">-${disc}%</span>`:''}
+        <div class="detail-price-box">
+          ${p.oldPrice?`<div class="detail-old-price">${cx.fmt(p.oldPrice)}</div>`:''}
+          <div class="detail-price">${cx.fmt(p.price)}</div>
+          <div class="detail-installments">12 cuotas sin interés de ${cx.fmt(p.price/12)}</div>
         </div>
 
-        <div class="detail-option">
-          <div class="option-label">Color: <strong id="color-name">${p.colorNames[selectedColor]}</strong></div>
-          <div class="color-selector">
-            ${p.colors.map((c,i)=>`<button class="color-btn${i===selectedColor?' active':''}" id="cbtn-${i}"
-              style="background:${c};${c.startsWith('#d')||c.startsWith('#e')||c==='#eeeedd'?'border:1px solid #ccc':''}"
-              onclick="selectColor(${i})" title="${p.colorNames[i]}"></button>`).join('')}
+        <div class="qty-row">
+          <label>Cantidad</label>
+          <div class="qty-ctrl">
+            <button onclick="setQty(qty-1)">−</button>
+            <span id="qty-display">1</span>
+            <button onclick="setQty(qty+1)">+</button>
           </div>
+          ${p.stock<=5?`<span style="font-size:12px;color:#e03030">¡Solo ${p.stock} en stock!</span>`:''}
         </div>
 
-        <div class="detail-option">
-          <div class="option-label">Cantidad</div>
-          <div class="qty-selector">
-            <button class="qty-btn" onclick="setQty(qty-1)">−</button>
-            <span class="qty-display" id="qty-display">1</span>
-            <button class="qty-btn" onclick="setQty(qty+1)">+</button>
+        <button class="btn-add-cart" id="add-btn" onclick="doAdd('${p.id}')">
+          Agregar al carrito
+        </button>
+
+        <div class="detail-perks">
+          <div class="perk">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            Envío a todo el país
           </div>
-        </div>
-
-        <button class="btn-add-cart" id="add-btn" onclick="doAdd()">Agregar al carrito</button>
-
-        <div class="detail-badges">
-          <div class="db"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> Envío gratis en compras +$80</div>
-          <div class="db"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Garantía 12 meses</div>
-          <div class="db"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg> Devoluciones gratis</div>
+          <div class="perk">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Garantía 12 meses
+          </div>
+          <div class="perk">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+            Devolución gratis
+          </div>
+          <div class="perk">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Soporte técnico
+          </div>
         </div>
       </div>
     </div>
 
-    ${p.specs && p.specs.length ? `
-    <div class="detail-specs-section">
-      <h2>Especificaciones</h2>
+    ${p.specs&&p.specs.length?`
+    <div class="specs-section">
+      <h2>Especificaciones técnicas</h2>
       <div class="specs-grid">
-        ${p.specs.map(s=>`<div class="spec-item"><span class="spec-label">${s.label}</span><span class="spec-value">${s.value}</span></div>`).join('')}
+        ${p.specs.map(s=>`<div class="spec-row"><span class="spec-label">${s.label}</span><span class="spec-val">${s.value}</span></div>`).join('')}
       </div>
-    </div>` : ''}`;
-  }
+    </div>`:''}
 
-  let qty = 1;
-  function setQty(n) { qty = Math.max(1,n); document.getElementById('qty-display').textContent = qty; }
-
-  function selectColor(i) {
-    selectedColor = i;
-    document.getElementById('color-name').textContent = p.colorNames[i];
-    document.querySelectorAll('.color-btn').forEach((b,j) => b.classList.toggle('active', j===i));
-    document.querySelectorAll('.detail-thumb').forEach((b,j) => b.classList.toggle('active', j===i));
-  }
-
-  function doAdd() {
-    for (let i=0; i<qty; i++) cx.cartAdd(p.id, selectedColor);
-    const btn = document.getElementById('add-btn');
-    btn.textContent = '✓ Agregado al carrito'; btn.classList.add('added');
-    cx.updateBadge();
-    setTimeout(() => { btn.textContent='Agregar al carrito'; btn.classList.remove('added'); }, 2000);
-    openCart();
-  }
-
-  renderDetail();
+    <div class="related-section" id="related"></div>`;
 
   // Related
-  const related = cx.getByCategory(p.category).filter(x=>x.id!==p.id).slice(0,4);
-  if (related.length) {
-    document.getElementById('related-wrap').innerHTML = `
-      <div class="related-section">
-        <div class="section-header">
-          <div><div class="section-label">También te puede interesar</div><h2>Productos relacionados</h2></div>
-          <a href="category.html?id=${p.category}" class="see-all">Ver todos →</a>
-        </div>
-        <div class="prod-grid-4">${related.map(productCard).join('')}</div>
-      </div>`;
+  const related=cx.getByCat(p.category).filter(x=>x.id!==p.id).slice(0,4);
+  if(related.length){
+    document.getElementById('related').innerHTML=`
+      <div class="section-header">
+        <div><div class="section-tag">También te puede interesar</div><h2>Productos relacionados</h2></div>
+        <a href="category.html?id=${p.category}" class="see-all-link">Ver todos →</a>
+      </div>
+      <div class="featured-grid">${related.map(productCard).join('')}</div>`;
   }
+});
+
+function setQty(n){
+  qty=Math.max(1,n);
+  document.getElementById('qty-display').textContent=qty;
+}
+
+function doAdd(id){
+  for(let i=0;i<qty;i++) cx.cartAdd(id);
+  cx.refreshBadge();
+  const btn=document.getElementById('add-btn');
+  btn.textContent='✓ Agregado al carrito';
+  btn.classList.add('added');
+  setTimeout(()=>{btn.textContent='Agregar al carrito';btn.classList.remove('added');},2000);
+  openCart();
 }
 </script>
 </body>

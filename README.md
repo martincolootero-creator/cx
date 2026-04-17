@@ -1,16 +1,18 @@
-# CX Technology Store — HTML puro
+# CX Technology — Tienda web
 
-Sin frameworks. HTML + CSS + JS vanilla. Datos en localStorage.
+HTML + CSS + JS puro. Sin frameworks. Datos en localStorage.
 
 ## Páginas
-- `index.html` — Home
-- `category.html` — Tienda / categorías
-- `product.html` — Detalle de producto
-- `search.html` — Búsqueda
-- `admin.html` — Panel admin
+- `index.html`    — Home
+- `category.html` — Catálogo con filtros (estilo Logitech)
+- `product.html`  — Detalle de producto
+- `checkout.html` — Formulario de compra
+- `success.html`  — Confirmación de pedido
+- `search.html`   — Búsqueda
+- `admin.html`    — Panel de administración
 
 ## Deploy en Vercel
-1. Subir a GitHub
-2. vercel.com → New Project → Framework: **Other**
-3. Build command: vacío | Output directory: `.`
+1. Subir repo a GitHub
+2. vercel.com → New Project → Framework: Other
+3. Build command: vacío | Output: `.`
 4. Deploy

@@ -6,37 +6,35 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="site-nav"></div>
-
-<div class="page-shop">
-  <div class="breadcrumb"><a href="index.html">Inicio</a><span class="sep">/</span><span class="bc-current">Búsqueda</span></div>
+<div id="cx-nav"></div>
+<div class="page-wrap" style="padding-bottom:80px">
+  <div class="breadcrumb">
+    <a href="index.html">CX</a><span class="sep">›</span><span class="current">Búsqueda</span>
+  </div>
   <div id="search-header" style="margin-bottom:24px"></div>
-  <div class="prod-grid-4" id="results"></div>
+  <div class="catalog-grid" id="results"></div>
 </div>
-
-<div id="site-footer"></div>
+<div id="cx-footer"></div>
 <script src="js/data.js"></script>
 <script>
-const q = new URLSearchParams(location.search).get('q') || '';
-renderNav(); renderFooter(); renderCartDrawer();
-document.title = `"${q}" — CX Technology`;
-
-const found = cx.getProducts().filter(p =>
-  p.name.toLowerCase().includes(q.toLowerCase()) ||
-  p.description.toLowerCase().includes(q.toLowerCase()) ||
-  p.category.toLowerCase().includes(q.toLowerCase())
-);
-
-document.getElementById('search-header').innerHTML = `
-  <h1 style="font-family:var(--font-display);font-size:32px;margin-bottom:6px">Resultados para "<em>${q}</em>"</h1>
-  <p style="font-size:13px;color:var(--muted)">${found.length} producto${found.length!==1?'s':''} encontrado${found.length!==1?'s':''}</p>`;
-
-document.getElementById('results').innerHTML = found.length
-  ? found.map(productCard).join('')
-  : `<div style="grid-column:1/-1;text-align:center;padding:80px 0;color:var(--muted)">
-      <p>No encontramos productos para "<strong>${q}</strong>".</p>
-      <a href="index.html" class="btn-primary" style="margin-top:20px;display:inline-block">Volver al inicio</a>
-    </div>`;
+document.addEventListener('DOMContentLoaded',()=>{
+  const q=new URLSearchParams(location.search).get('q')||'';
+  document.title=`"${q}" — CX Technology`;
+  const found=cx.getProducts().filter(p=>
+    p.name.toLowerCase().includes(q.toLowerCase())||
+    (p.shortDesc||'').toLowerCase().includes(q.toLowerCase())||
+    p.category.toLowerCase().includes(q.toLowerCase())
+  );
+  document.getElementById('search-header').innerHTML=`
+    <h1 style="font-size:26px;font-weight:700;margin-bottom:4px">Resultados para "<em>${q}</em>"</h1>
+    <p style="font-size:13px;color:var(--muted)">${found.length} producto${found.length!==1?'s':''} encontrado${found.length!==1?'s':''}</p>`;
+  document.getElementById('results').innerHTML=found.length
+    ? found.map(productCard).join('')
+    : `<div style="grid-column:1/-1;text-align:center;padding:80px 0;color:var(--muted)">
+        <p>No encontramos productos para "<strong>${q}</strong>".</p>
+        <a href="category.html" style="color:var(--accent);margin-top:12px;display:inline-block">Ver todos los productos →</a>
+      </div>`;
+});
 </script>
 </body>
 </html>

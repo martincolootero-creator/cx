@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkout — CX Technology</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="cx-nav"></div>
+
+<div class="checkout-wrap">
+  <div class="breadcrumb">
+    <a href="index.html">CX</a>
+    <span class="sep">›</span>
+    <a href="javascript:openCart()">Carrito</a>
+    <span class="sep">›</span>
+    <span class="current">Checkout</span>
+  </div>
+
+  <h1>Finalizar compra</h1>
+
+  <div id="empty-cart-msg" style="display:none;text-align:center;padding:60px 0">
+    <p style="font-size:16px;color:var(--muted);margin-bottom:16px">Tu carrito está vacío.</p>
+    <a href="category.html" class="btn-primary">Ver productos</a>
+  </div>
+
+  <div class="checkout-grid" id="checkout-content">
+    <!-- FORM -->
+    <div class="checkout-form">
+
+      <div class="form-section">
+        <h3>Datos personales</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Nombre</label><input type="text" id="f-nombre" placeholder="Juan"></div>
+          <div class="form-group"><label>Apellido</label><input type="text" id="f-apellido" placeholder="García"></div>
+          <div class="form-group"><label>Email</label><input type="email" id="f-email" placeholder="juan@email.com"></div>
+          <div class="form-group"><label>Teléfono</label><input type="tel" id="f-tel" placeholder="11 1234-5678"></div>
+          <div class="form-group"><label>DNI / CUIT</label><input type="text" id="f-dni" placeholder="12.345.678"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Dirección de entrega</h3>
+        <div class="form-grid">
+          <div class="form-group full"><label>Calle y número</label><input type="text" id="f-calle" placeholder="Av. Corrientes 1234"></div>
+          <div class="form-group"><label>Piso / Depto (opcional)</label><input type="text" id="f-piso" placeholder="3° B"></div>
+          <div class="form-group"><label>Código postal</label><input type="text" id="f-cp" placeholder="C1043"></div>
+          <div class="form-group"><label>Ciudad</label><input type="text" id="f-ciudad" placeholder="Buenos Aires"></div>
+          <div class="form-group"><label>Provincia</label>
+            <select id="f-provincia">
+              <option value="">Seleccioná</option>
+              <option>Buenos Aires</option>
+              <option>CABA</option>
+              <option>Córdoba</option>
+              <option>Santa Fe</option>
+              <option>Mendoza</option>
+              <option>Tucumán</option>
+              <option>Entre Ríos</option>
+              <option>Salta</option>
+              <option>Misiones</option>
+              <option>Chaco</option>
+              <option>Corrientes</option>
+              <option>Santiago del Estero</option>
+              <option>San Juan</option>
+              <option>Jujuy</option>
+              <option>Río Negro</option>
+              <option>Neuquén</option>
+              <option>Formosa</option>
+              <option>Chubut</option>
+              <option>San Luis</option>
+              <option>Catamarca</option>
+              <option>La Rioja</option>
+              <option>La Pampa</option>
+              <option>Santa Cruz</option>
+              <option>Tierra del Fuego</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Método de pago</h3>
+        <div class="payment-opts">
+          <label class="payment-opt selected" onclick="selectPayment(this)">
+            <input type="radio" name="payment" value="transferencia" checked>
+            <div>
+              <div class="payment-opt-label">💳 Transferencia bancaria</div>
+              <div class="payment-opt-sub">10% de descuento abonando por transferencia</div>
+            </div>
+          </label>
+          <label class="payment-opt" onclick="selectPayment(this)">
+            <input type="radio" name="payment" value="mercadopago">
+            <div>
+              <div class="payment-opt-label">💙 Mercado Pago</div>
+              <div class="payment-opt-sub">Tarjeta de crédito, débito o dinero en cuenta</div>
+            </div>
+          </label>
+          <label class="payment-opt" onclick="selectPayment(this)">
+            <input type="radio" name="payment" value="efectivo">
+            <div>
+              <div class="payment-opt-label">💵 Efectivo / Pago en local</div>
+              <div class="payment-opt-sub">Retirá y pagá en nuestro local en Rosario</div>
+            </div>
+          </label>
+          <label class="payment-opt" onclick="selectPayment(this)">
+            <input type="radio" name="payment" value="cuotas">
+            <div>
+              <div class="payment-opt-label">🏦 Tarjeta en cuotas</div>
+              <div class="payment-opt-sub">Hasta 12 cuotas sin interés con tarjetas seleccionadas</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ORDER SUMMARY -->
+    <div class="order-summary">
+      <h3>Resumen del pedido</h3>
+      <div class="order-items" id="order-items"></div>
+      <hr class="order-divider">
+      <div class="order-row"><span>Subtotal</span><span id="order-subtotal"></span></div>
+      <div class="order-row"><span>Envío</span><span style="color:#2a8a4a">A calcular</span></div>
+      <div class="order-total"><span>Total</span><span id="order-total"></span></div>
+      <button class="btn-place-order" onclick="placeOrder()">Confirmar pedido</button>
+      <p style="font-size:11px;color:var(--light);text-align:center;margin-top:12px">
+        Al confirmar aceptás los términos y condiciones de CX Technology.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div id="cx-footer"></div>
+<script src="js/data.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const cart  = cx.getCart();
+  const prods = cx.getProducts();
+
+  if(!cart.length){
+    document.getElementById('empty-cart-msg').style.display='block';
+    document.getElementById('checkout-content').style.display='none';
+    return;
+  }
+
+  // Order items
+  document.getElementById('order-items').innerHTML = cart.map(item=>{
+    const p=prods.find(x=>x.id===item.id); if(!p)return'';
+    return `<div class="order-item">
+      <div class="order-item-img"><img src="${p.image}" alt="${p.name}" onerror="this.style.opacity='.2'"></div>
+      <div class="order-item-name">${p.name} <span style="color:var(--muted)">×${item.qty}</span></div>
+      <div class="order-item-price">${cx.fmt(p.price*item.qty)}</div>
+    </div>`;
+  }).join('');
+
+  const total = cx.cartTotal();
+  document.getElementById('order-subtotal').textContent = cx.fmt(total);
+  document.getElementById('order-total').textContent    = cx.fmt(total);
+});
+
+function selectPayment(el){
+  document.querySelectorAll('.payment-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function placeOrder(){
+  const nombre   = document.getElementById('f-nombre').value.trim();
+  const apellido = document.getElementById('f-apellido').value.trim();
+  const email    = document.getElementById('f-email').value.trim();
+  const calle    = document.getElementById('f-calle').value.trim();
+  const ciudad   = document.getElementById('f-ciudad').value.trim();
+  const provincia= document.getElementById('f-provincia').value;
+
+  if(!nombre||!apellido||!email||!calle||!ciudad||!provincia){
+    alert('Por favor completá todos los campos obligatorios.');
+    return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    alert('Ingresá un email válido.');
+    return;
+  }
+
+  // Save order
+  const order = {
+    id: 'ORD-' + Date.now(),
+    date: new Date().toLocaleDateString('es-AR'),
+    customer: { nombre, apellido, email },
+    items: cx.getCart(),
+    total: cx.cartTotal(),
+    payment: document.querySelector('input[name="payment"]:checked').value,
+  };
+  const orders = JSON.parse(localStorage.getItem('cx_orders')||'[]');
+  orders.push(order);
+  localStorage.setItem('cx_orders', JSON.stringify(orders));
+
+  cx.cartClear();
+  location.href = 'success.html?order=' + order.id;
+}
+</script>
+</body>
+</html>

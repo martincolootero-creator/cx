@@ -6,25 +6,22 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="site-nav"></div>
+<div id="cx-nav"></div>
 
-<div class="admin-wrap">
-  <!-- SIDEBAR -->
+<div class="admin-layout">
   <aside class="admin-sidebar">
-    <div class="admin-sidebar-title">Panel de administración</div>
-    <div class="admin-nav">
-      <h3>General</h3>
-      <div class="anav active" onclick="show('dashboard',this)">📊 Dashboard</div>
-      <h3>Contenido</h3>
-      <div class="anav" onclick="show('products',this)">📦 Productos</div>
-      <div class="anav" onclick="show('categories',this)">🗂️ Categorías</div>
-      <h3>Herramientas</h3>
-      <div class="anav" onclick="if(confirm('¿Resetear a los datos por defecto?')){localStorage.removeItem('cx_products');localStorage.removeItem('cx_cats');location.reload()}">🔄 Resetear datos</div>
-      <div class="anav" onclick="location.href='index.html'">🌐 Ver tienda</div>
-    </div>
+    <div class="admin-sidebar-hd"><span>Panel Admin — CX</span></div>
+    <h3>General</h3>
+    <div class="anav active" onclick="show('dashboard',this)">📊 Dashboard</div>
+    <h3>Contenido</h3>
+    <div class="anav" onclick="show('products',this)">💻 Productos</div>
+    <div class="anav" onclick="show('categories',this)">🗂️ Categorías</div>
+    <div class="anav" onclick="show('orders',this)">📦 Pedidos</div>
+    <h3>Herramientas</h3>
+    <div class="anav" onclick="if(confirm('¿Resetear datos?')){localStorage.removeItem('cx_prods');localStorage.removeItem('cx_cats');location.reload()}">🔄 Resetear datos</div>
+    <div class="anav" onclick="location.href='index.html'">🌐 Ver tienda</div>
   </aside>
 
-  <!-- MAIN -->
   <div class="admin-main">
 
     <!-- DASHBOARD -->
@@ -33,58 +30,71 @@
       <div class="stats-row" id="stats"></div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px">
         <div style="font-size:15px;font-weight:600;margin-bottom:14px">Últimos productos</div>
-        <div id="recent"></div>
+        <div id="recent-prods"></div>
       </div>
     </div>
 
     <!-- PRODUCTS -->
     <div class="apanel" id="panel-products">
       <div class="apanel-title">Productos</div>
-      <button class="btn-add" onclick="openProd()">+ Nuevo producto</button>
+      <button class="btn-add" onclick="openProdModal()">+ Nuevo producto</button>
       <table class="atable">
-        <thead><tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Destacado</th><th>Acciones</th></tr></thead>
-        <tbody id="prod-tbody"></tbody>
+        <thead><tr><th>Imagen</th><th>Nombre</th><th>SKU</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Destacado</th><th>Acciones</th></tr></thead>
+        <tbody id="prods-tbody"></tbody>
       </table>
     </div>
 
     <!-- CATEGORIES -->
     <div class="apanel" id="panel-categories">
       <div class="apanel-title">Categorías</div>
-      <button class="btn-add" onclick="openCat()">+ Nueva categoría</button>
+      <button class="btn-add" onclick="openCatModal()">+ Nueva categoría</button>
       <table class="atable">
         <thead><tr><th>Nombre</th><th>ID</th><th>Productos</th><th>Descripción</th><th>Acciones</th></tr></thead>
-        <tbody id="cat-tbody"></tbody>
+        <tbody id="cats-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="apanel" id="panel-orders">
+      <div class="apanel-title">Pedidos</div>
+      <table class="atable">
+        <thead><tr><th>N° Pedido</th><th>Fecha</th><th>Cliente</th><th>Total</th><th>Pago</th></tr></thead>
+        <tbody id="orders-tbody"></tbody>
       </table>
     </div>
 
   </div>
 </div>
 
-<!-- MODAL PRODUCT -->
+<!-- MODAL PRODUCTO -->
 <div class="modal-bg" id="modal-prod">
   <div class="modal">
     <h3 id="prod-modal-title">Nuevo producto</h3>
-    <input type="hidden" id="edit-id">
+    <input type="hidden" id="edit-prod-id">
     <div class="fg-row">
       <div class="fg"><label>Nombre</label><input id="f-name"></div>
+      <div class="fg"><label>SKU</label><input id="f-sku" placeholder="CX12345"></div>
+    </div>
+    <div class="fg-row">
       <div class="fg"><label>Categoría</label><select id="f-cat"></select></div>
-    </div>
-    <div class="fg-row">
-      <div class="fg"><label>Precio USD</label><input id="f-price" type="number" step="0.01"></div>
-      <div class="fg"><label>Precio anterior (opcional)</label><input id="f-oldprice" type="number" step="0.01" placeholder="0"></div>
-    </div>
-    <div class="fg"><label>URL de imagen</label><input id="f-image" placeholder="https://..."></div>
-    <div class="fg"><label>Descripción corta</label><input id="f-desc"></div>
-    <div class="fg"><label>Descripción larga</label><textarea id="f-longdesc"></textarea></div>
-    <div class="fg-row">
       <div class="fg"><label>Badge</label>
         <select id="f-badge"><option value="">Sin badge</option><option>Superventas</option><option>Nuevo</option></select>
       </div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Precio ARS</label><input id="f-price" type="number"></div>
+      <div class="fg"><label>Precio anterior (opcional)</label><input id="f-oldprice" type="number" placeholder="0"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Stock</label><input id="f-stock" type="number" value="10"></div>
       <div class="fg" style="display:flex;align-items:center;gap:10px;padding-top:18px">
-        <label style="text-transform:none;letter-spacing:0;font-size:13px;margin:0;color:var(--mid)">Destacado</label>
+        <label style="font-size:13px;color:var(--muted);margin:0;text-transform:none;letter-spacing:0">Destacado</label>
         <label class="toggle"><input type="checkbox" id="f-featured"><span class="tslider"></span></label>
       </div>
     </div>
+    <div class="fg"><label>URL / Ruta de imagen</label><input id="f-image" placeholder="img/CX12345.png"></div>
+    <div class="fg"><label>Descripción corta (specs)</label><input id="f-shortdesc" placeholder="Intel Core i5 · 8GB · 256GB SSD"></div>
+    <div class="fg"><label>Descripción larga</label><textarea id="f-longdesc"></textarea></div>
     <div class="modal-foot">
       <button class="btn-cancel" onclick="closeModal('modal-prod')">Cancelar</button>
       <button class="btn-save" onclick="saveProd()">Guardar</button>
@@ -92,15 +102,13 @@
   </div>
 </div>
 
-<!-- MODAL CATEGORY -->
+<!-- MODAL CATEGORÍA -->
 <div class="modal-bg" id="modal-cat">
   <div class="modal">
     <h3 id="cat-modal-title">Nueva categoría</h3>
     <input type="hidden" id="edit-cat-id">
-    <div class="fg-row">
-      <div class="fg"><label>Nombre</label><input id="fc-name"></div>
-      <div class="fg"><label>Descripción</label><input id="fc-desc"></div>
-    </div>
+    <div class="fg"><label>Nombre</label><input id="fc-name"></div>
+    <div class="fg"><label>Descripción</label><input id="fc-desc"></div>
     <div class="modal-foot">
       <button class="btn-cancel" onclick="closeModal('modal-cat')">Cancelar</button>
       <button class="btn-save" onclick="saveCat()">Guardar</button>
@@ -108,151 +116,155 @@
   </div>
 </div>
 
-<div id="site-footer"></div>
+<div id="cx-footer"></div>
 <script src="js/data.js"></script>
 <script>
-renderNav(); renderFooter(); renderCartDrawer();
+document.addEventListener('DOMContentLoaded',()=>{ loadAll(); });
 
-function show(id, el) {
-  document.querySelectorAll('.apanel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.anav').forEach(a => a.classList.remove('active'));
-  document.getElementById('panel-' + id).classList.add('active');
-  if (el) el.classList.add('active');
-  if (id === 'products')   renderProducts();
-  if (id === 'categories') renderCats();
+function show(id,el){
+  document.querySelectorAll('.apanel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.anav').forEach(a=>a.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(el)el.classList.add('active');
 }
 
-// ── DASHBOARD ──────────────────────────────────────────
-function renderDashboard() {
-  const prods = cx.getProducts(), cats = cx.getCategories();
-  document.getElementById('stats').innerHTML = [
-    { n: prods.length,              l: 'Productos' },
-    { n: cats.length,               l: 'Categorías' },
-    { n: prods.filter(p=>p.featured).length, l: 'Destacados' },
-    { n: prods.filter(p=>p.oldPrice).length, l: 'En oferta' },
-  ].map(s=>`<div class="stat-card"><div class="stat-n">${s.n}</div><div class="stat-l">${s.l}</div></div>`).join('');
+function loadAll(){ loadDash(); loadProds(); loadCats(); loadOrders(); }
 
-  document.getElementById('recent').innerHTML = `<table class="atable">
+function loadDash(){
+  const prods=cx.getProducts(),cats=cx.getCategories();
+  const orders=JSON.parse(localStorage.getItem('cx_orders')||'[]');
+  document.getElementById('stats').innerHTML=[
+    {n:prods.length,l:'Productos'},
+    {n:cats.length,l:'Categorías'},
+    {n:orders.length,l:'Pedidos'},
+    {n:prods.filter(p=>p.featured).length,l:'Destacados'},
+  ].map(s=>`<div class="stat-card"><div class="stat-n">${s.n}</div><div class="stat-l">${s.l}</div></div>`).join('');
+  document.getElementById('recent-prods').innerHTML=`<table class="atable">
     <thead><tr><th>Imagen</th><th>Nombre</th><th>Precio</th><th>Categoría</th></tr></thead>
     <tbody>${[...prods].reverse().slice(0,5).map(p=>`<tr>
       <td><img src="${p.image}" onerror="this.style.opacity='.2'"></td>
-      <td>${p.name}</td><td>${cx.fmt(p.price)}</td>
+      <td><a href="product.html?id=${p.id}" target="_blank" style="color:var(--accent)">${p.name}</a></td>
+      <td>${cx.fmt(p.price)}</td>
       <td>${cx.getCategories().find(c=>c.id===p.category)?.label||p.category}</td>
     </tr>`).join('')}</tbody></table>`;
 }
 
-// ── PRODUCTS ───────────────────────────────────────────
-function renderProducts() {
-  document.getElementById('prod-tbody').innerHTML = cx.getProducts().map(p => {
-    const cat = cx.getCategories().find(c=>c.id===p.category);
+function loadProds(){
+  document.getElementById('prods-tbody').innerHTML=cx.getProducts().map(p=>{
+    const cat=cx.getCategories().find(c=>c.id===p.category);
     return `<tr>
       <td><img src="${p.image}" onerror="this.style.opacity='.2'"></td>
-      <td><a href="product.html?id=${p.id}" target="_blank" style="color:var(--red)">${p.name}</a></td>
+      <td><a href="product.html?id=${p.id}" target="_blank" style="color:var(--accent)">${p.name}</a></td>
+      <td style="font-family:monospace;font-size:11px">${p.sku||p.id}</td>
       <td>${cat?.label||p.category}</td>
       <td>${cx.fmt(p.price)}</td>
+      <td>${p.stock||'—'}</td>
       <td>${p.featured?'⭐':''}</td>
       <td><div class="tbl-actions">
-        <button class="btn-edit" onclick="openProd('${p.id}')">Editar</button>
-        <button class="btn-del" onclick="if(confirm('¿Eliminar?')){cx.deleteProduct('${p.id}');renderProducts();renderDashboard()}">Eliminar</button>
+        <button class="btn-edit" onclick="openProdModal('${p.id}')">Editar</button>
+        <button class="btn-del" onclick="if(confirm('¿Eliminar?')){cx.deleteProduct('${p.id}');loadAll()}">Eliminar</button>
       </div></td>
     </tr>`;
   }).join('');
 }
 
-function openProd(id) {
-  document.getElementById('prod-modal-title').textContent = id ? 'Editar producto' : 'Nuevo producto';
-  document.getElementById('edit-id').value = id || '';
-  // Fill category select
-  document.getElementById('f-cat').innerHTML = cx.getCategories().map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
-  // Clear
-  ['f-name','f-price','f-oldprice','f-image','f-desc','f-longdesc'].forEach(x=>document.getElementById(x).value='');
-  document.getElementById('f-badge').value = '';
-  document.getElementById('f-featured').checked = false;
-  if (id) {
-    const p = cx.getById(id);
-    if (p) {
-      document.getElementById('f-name').value     = p.name;
-      document.getElementById('f-cat').value      = p.category;
-      document.getElementById('f-price').value    = p.price;
-      document.getElementById('f-oldprice').value = p.oldPrice || '';
-      document.getElementById('f-image').value    = p.image || '';
-      document.getElementById('f-desc').value     = p.description || '';
-      document.getElementById('f-longdesc').value = p.longDescription || '';
-      document.getElementById('f-badge').value    = p.badge || '';
-      document.getElementById('f-featured').checked = !!p.featured;
-    }
-  }
-  document.getElementById('modal-prod').classList.add('open');
-}
-
-function saveProd() {
-  const id = document.getElementById('edit-id').value;
-  const data = {
-    name:            document.getElementById('f-name').value.trim(),
-    category:        document.getElementById('f-cat').value,
-    price:           parseFloat(document.getElementById('f-price').value) || 0,
-    oldPrice:        parseFloat(document.getElementById('f-oldprice').value) || null,
-    image:           document.getElementById('f-image').value.trim(),
-    description:     document.getElementById('f-desc').value.trim(),
-    longDescription: document.getElementById('f-longdesc').value.trim(),
-    badge:           document.getElementById('f-badge').value || null,
-    featured:        document.getElementById('f-featured').checked,
-    colors:          ['#3a3a3a'],
-    colorNames:      ['Grafito'],
-    specs:           [],
-  };
-  if (!data.name || !data.price) return alert('Nombre y precio son obligatorios.');
-  if (id) cx.updateProduct(id, data);
-  else cx.addProduct(data);
-  closeModal('modal-prod');
-  renderProducts();
-  renderDashboard();
-}
-
-// ── CATEGORIES ─────────────────────────────────────────
-function renderCats() {
-  document.getElementById('cat-tbody').innerHTML = cx.getCategories().map(c => `<tr>
+function loadCats(){
+  document.getElementById('cats-tbody').innerHTML=cx.getCategories().map(c=>`<tr>
     <td><strong>${c.label}</strong></td>
-    <td><code style="font-size:11px;background:var(--card);padding:2px 6px;border-radius:3px">${c.id}</code></td>
-    <td>${cx.getByCategory(c.id).length}</td>
-    <td style="color:var(--muted);font-size:12px">${c.description}</td>
+    <td><code style="font-size:11px;background:#f5f5f5;padding:2px 6px;border-radius:3px">${c.id}</code></td>
+    <td>${cx.getByCat(c.id).length}</td>
+    <td style="font-size:12px;color:var(--muted)">${c.desc||''}</td>
     <td><div class="tbl-actions">
-      <button class="btn-edit" onclick="openCat('${c.id}')">Editar</button>
-      <button class="btn-del" onclick="if(confirm('¿Eliminar categoría?')){cx.deleteCategory('${c.id}');renderCats();renderDashboard()}">Eliminar</button>
+      <button class="btn-edit" onclick="openCatModal('${c.id}')">Editar</button>
+      <button class="btn-del" onclick="if(confirm('¿Eliminar?')){cx.deleteCategory('${c.id}');loadAll()}">Eliminar</button>
     </div></td>
   </tr>`).join('');
 }
 
-function openCat(id) {
-  document.getElementById('cat-modal-title').textContent = id ? 'Editar categoría' : 'Nueva categoría';
-  document.getElementById('edit-cat-id').value = id || '';
-  document.getElementById('fc-name').value = '';
-  document.getElementById('fc-desc').value = '';
-  if (id) {
-    const c = cx.getCategories().find(x=>x.id===id);
-    if (c) { document.getElementById('fc-name').value=c.label; document.getElementById('fc-desc').value=c.description||''; }
+function loadOrders(){
+  const orders=JSON.parse(localStorage.getItem('cx_orders')||'[]');
+  document.getElementById('orders-tbody').innerHTML=orders.length
+    ? [...orders].reverse().map(o=>`<tr>
+        <td style="font-family:monospace;font-size:11px">${o.id}</td>
+        <td>${o.date}</td>
+        <td>${o.customer?.nombre||''} ${o.customer?.apellido||''}<br><small style="color:var(--muted)">${o.customer?.email||''}</small></td>
+        <td><strong>${cx.fmt(o.total)}</strong></td>
+        <td>${o.payment||'—'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">No hay pedidos aún</td></tr>';
+}
+
+// ── PRODUCT MODAL ─────────────────────────────────────
+function openProdModal(id){
+  document.getElementById('prod-modal-title').textContent=id?'Editar producto':'Nuevo producto';
+  document.getElementById('edit-prod-id').value=id||'';
+  document.getElementById('f-cat').innerHTML=cx.getCategories().map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
+  ['f-name','f-sku','f-price','f-oldprice','f-image','f-shortdesc','f-longdesc'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('f-stock').value='10';
+  document.getElementById('f-badge').value='';
+  document.getElementById('f-featured').checked=false;
+  if(id){
+    const p=cx.getById(id); if(!p)return;
+    document.getElementById('f-name').value=p.name;
+    document.getElementById('f-sku').value=p.sku||'';
+    document.getElementById('f-cat').value=p.category;
+    document.getElementById('f-price').value=p.price;
+    document.getElementById('f-oldprice').value=p.oldPrice||'';
+    document.getElementById('f-stock').value=p.stock||10;
+    document.getElementById('f-image').value=p.image||'';
+    document.getElementById('f-shortdesc').value=p.shortDesc||'';
+    document.getElementById('f-longdesc').value=p.longDesc||'';
+    document.getElementById('f-badge').value=p.badge||'';
+    document.getElementById('f-featured').checked=!!p.featured;
+  }
+  document.getElementById('modal-prod').classList.add('open');
+}
+
+function saveProd(){
+  const id=document.getElementById('edit-prod-id').value;
+  const data={
+    name:      document.getElementById('f-name').value.trim(),
+    sku:       document.getElementById('f-sku').value.trim(),
+    category:  document.getElementById('f-cat').value,
+    price:     parseFloat(document.getElementById('f-price').value)||0,
+    oldPrice:  parseFloat(document.getElementById('f-oldprice').value)||null,
+    stock:     parseInt(document.getElementById('f-stock').value)||10,
+    image:     document.getElementById('f-image').value.trim(),
+    shortDesc: document.getElementById('f-shortdesc').value.trim(),
+    longDesc:  document.getElementById('f-longdesc').value.trim(),
+    badge:     document.getElementById('f-badge').value||null,
+    featured:  document.getElementById('f-featured').checked,
+    specs:[],
+  };
+  if(!data.name||!data.price)return alert('Nombre y precio son obligatorios.');
+  if(id)cx.updateProduct(id,data); else cx.addProduct(data);
+  closeModal('modal-prod'); loadAll();
+}
+
+// ── CATEGORY MODAL ────────────────────────────────────
+function openCatModal(id){
+  document.getElementById('cat-modal-title').textContent=id?'Editar categoría':'Nueva categoría';
+  document.getElementById('edit-cat-id').value=id||'';
+  document.getElementById('fc-name').value='';
+  document.getElementById('fc-desc').value='';
+  if(id){
+    const c=cx.getCategories().find(x=>x.id===id); if(!c)return;
+    document.getElementById('fc-name').value=c.label;
+    document.getElementById('fc-desc').value=c.desc||'';
   }
   document.getElementById('modal-cat').classList.add('open');
 }
 
-function saveCat() {
-  const id = document.getElementById('edit-cat-id').value;
-  const label = document.getElementById('fc-name').value.trim();
-  const description = document.getElementById('fc-desc').value.trim();
-  if (!label) return alert('El nombre es obligatorio.');
-  if (id) cx.updateCategory(id, { label, description });
-  else cx.addCategory({ label, description });
-  closeModal('modal-cat');
-  renderCats();
-  renderDashboard();
+function saveCat(){
+  const id=document.getElementById('edit-cat-id').value;
+  const label=document.getElementById('fc-name').value.trim();
+  const desc=document.getElementById('fc-desc').value.trim();
+  if(!label)return alert('El nombre es obligatorio.');
+  if(id)cx.updateCategory(id,{label,desc}); else cx.addCategory({label,desc});
+  closeModal('modal-cat'); loadAll();
 }
 
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-// init
-renderDashboard();
-renderProducts();
-renderCats();
+function closeModal(id){document.getElementById(id).classList.remove('open');}
 </script>
 </body>
 </html>

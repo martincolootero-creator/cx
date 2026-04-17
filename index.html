@@ -2,101 +2,92 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CX Technology — Periféricos para hogar y oficina</title>
+<title>CX Technology — Computadoras, Notebooks y Mini PCs</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="site-nav"></div>
+<div id="cx-nav"></div>
 
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-content">
-    <div class="hero-tag">Nueva colección 2025</div>
-    <h1>Tecnología para<br>tu espacio de trabajo</h1>
-    <p>Periféricos de calidad premium para hogar y oficina. Diseñados para durar, pensados para rendir.</p>
+<section class="home-hero">
+  <div class="hero-text">
+    <span class="hero-tag">Tecnología argentina</span>
+    <h1>Equipos para<br>trabajar y crecer</h1>
+    <p>Notebooks, Mini PCs y computadoras de escritorio con garantía oficial. Calidad CX para el hogar y la empresa.</p>
     <div class="hero-actions">
       <a href="category.html" class="btn-primary">Ver productos</a>
-      <a href="category.html?id=mice" class="btn-ghost">Explorar mice</a>
+      <a href="category.html?id=notebooks" class="btn-outline-white">Notebooks</a>
     </div>
   </div>
-  <div class="hero-visual">
-    <div class="hero-circle"></div>
-    <img src="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600" alt="CX Master 4" style="max-height:320px;object-fit:contain;position:relative;z-index:1">
+  <div class="hero-img">
+    <img src="img/CX30615.png" alt="CX Notebook">
   </div>
 </section>
 
 <!-- CATEGORÍAS -->
-<section class="section">
-  <div class="section-header">
-    <div><div class="section-label">Explorar</div><h2>Categorías</h2></div>
+<section class="home-cats">
+  <div class="page-wrap">
+    <div class="section-header">
+      <div>
+        <div class="section-tag">Explorá</div>
+        <h2>Categorías</h2>
+      </div>
+    </div>
+    <div class="cats-grid" id="catsGrid"></div>
   </div>
-  <div class="cat-grid" id="catGrid"></div>
 </section>
 
 <!-- DESTACADOS -->
-<section class="section section-gray">
-  <div class="section-header">
-    <div><div class="section-label">Lo más vendido</div><h2>Destacados</h2></div>
-    <a href="category.html" class="see-all">Ver todo →</a>
+<section class="home-featured">
+  <div class="page-wrap">
+    <div class="section-header">
+      <div>
+        <div class="section-tag">Lo más vendido</div>
+        <h2>Productos destacados</h2>
+      </div>
+      <a href="category.html" class="see-all-link">Ver todos →</a>
+    </div>
+    <div class="featured-grid" id="featuredGrid"></div>
   </div>
-  <div class="prod-grid-4" id="featuredGrid"></div>
 </section>
 
-<!-- PROMO BANNER -->
-<div class="promo-banner">
-  <div class="promo-content">
-    <div class="promo-label">Oferta por tiempo limitado</div>
-    <h2>Setup completo<br>para tu oficina</h2>
-    <p>Mouse + Teclado + Headset. Todo lo que necesitás para rendir al máximo.</p>
-    <a href="category.html" class="btn-primary">Ver combos</a>
-  </div>
-  <div class="promo-visual">
-    <div class="promo-bg-text">CX</div>
-    <img src="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400" alt="" style="max-height:220px;object-fit:contain;position:relative;z-index:1;filter:brightness(10)">
+<!-- CROSSSELL BANNER -->
+<div class="page-wrap" style="padding-top:48px">
+  <div class="crosssell-banner">
+    <div>
+      <h2>Mini PCs CX</h2>
+      <p>Potencia máxima en el mínimo espacio. Perfectos para oficina, hogar o como media center.</p>
+      <a href="category.html?id=mini-pcs" class="btn-accent">Conocer más →</a>
+    </div>
+    <div class="crosssell-imgs">
+      <img src="img/CX54214.png" alt="CX Mini PC">
+    </div>
   </div>
 </div>
 
-<!-- VALORES -->
-<section class="section">
-  <div class="values-grid">
-    <div class="value-item">
-      <div class="value-icon"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
-      <h3>Envío gratis</h3><p>En compras mayores a $80 USD a todo el país</p>
-    </div>
-    <div class="value-item">
-      <div class="value-icon"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-      <h3>Garantía 12 meses</h3><p>Todos nuestros productos tienen garantía oficial</p>
-    </div>
-    <div class="value-item">
-      <div class="value-icon"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-      <h3>Soporte local</h3><p>Atención en español, de lunes a viernes</p>
-    </div>
-    <div class="value-item">
-      <div class="value-icon"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
-      <h3>Calidad premium</h3><p>Productos testeados por profesionales</p>
-    </div>
-  </div>
-</section>
-
-<div id="site-footer"></div>
+<div id="cx-footer"></div>
 <script src="js/data.js"></script>
 <script>
-const CAT_ICONS = { mice:'🖱️', teclados:'⌨️', headsets:'🎧', webcams:'📷' };
+document.addEventListener('DOMContentLoaded', () => {
+  const cats = cx.getCategories();
+  const CAT_IMGS = {
+    'notebooks':  'img/CX30415.png',
+    'mini-pcs':   'img/CX54214.png',
+    'pcs':        'img/CX73567.png',
+    'gabinetes':  'img/CX73567.png',
+  };
+  document.getElementById('catsGrid').innerHTML = cats.map(c => `
+    <a href="category.html?id=${c.id}" class="cat-card">
+      <div class="cat-card-img">
+        <img src="${CAT_IMGS[c.id]||''}" alt="${c.label}" onerror="this.style.display='none'">
+      </div>
+      <h3>${c.label}</h3>
+      <p>${c.desc}</p>
+    </a>`).join('');
 
-renderNav();
-renderFooter();
-renderCartDrawer();
-
-// Cat grid
-document.getElementById('catGrid').innerHTML = cx.getCategories().map(c => `
-  <a href="category.html?id=${c.id}" class="cat-card">
-    <div class="cat-icon" style="font-size:48px">${CAT_ICONS[c.id]||'📦'}</div>
-    <div><div class="cat-name">${c.label}</div><div class="cat-desc">${c.description}</div></div>
-  </a>`).join('');
-
-// Featured grid
-document.getElementById('featuredGrid').innerHTML = cx.getFeatured().map(productCard).join('');
+  document.getElementById('featuredGrid').innerHTML = cx.getFeatured().slice(0,4).map(productCard).join('');
+});
 </script>
 </body>
 </html>
